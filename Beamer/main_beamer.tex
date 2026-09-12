@@ -17,6 +17,8 @@
 \usepackage{siunitx}
 \usepackage{tabularx}
 \usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,backgrounds}
 
 % Direktori penyimpanan gambar
 \graphicspath{{figures/}}
@@ -291,12 +293,101 @@
 % =============================================================
 \section{Arsitektur Pipeline Komputasi}
 
-% SLIDE 8
+% SLIDE 8 — TikZ Horizontal Flowchart
 \begin{frame}{Pipeline Komputasi Numerik 7 Tahap}
-	\begin{center}
-		\includegraphics[width=0.88\textwidth,keepaspectratio]{flowchart_pipeline.png}
-	\end{center}
+\tikzset{
+	stageBox/.style={
+		draw=UnairBlue, fill=UnairBlue!12, line width=0.8pt,
+		rounded corners=3pt,
+		minimum width=1.85cm, minimum height=1.55cm,
+		text width=1.75cm, align=center, font=\fontsize{5.5pt}{6.8pt}\selectfont
+	},
+	stepArrow/.style={
+		-{Stealth[length=4pt,width=3.5pt]},
+		draw=UnairYellow!80!orange, line width=1.4pt
+	},
+	startEnd/.style={
+		draw=DarkSlate, fill=DarkSlate!15, line width=0.8pt,
+		ellipse, minimum width=1.4cm, minimum height=0.7cm,
+		text width=1.3cm, align=center, font=\fontsize{5pt}{6pt}\selectfont\bfseries
+	},
+	stageLabel/.style={
+		font=\fontsize{5pt}{6pt}\selectfont\bfseries\color{UnairBlue},
+		above=2pt
+	}
+}
+\begin{center}
+\begin{tikzpicture}[node distance=0.38cm and 0.30cm]
+
+% ---- START node
+\node[startEnd] (start) {MULAI\\[1pt]Data EXFOR};
+
+% ---- Tahap 1
+\node[stageBox, right=0.30cm of start] (t1)
+	{\textbf{\color{UnairBlue}Tahap 1}\\[2pt]
+	 Akuisisi Data\\IAEA-NDS EXFOR\\Entry 10224002\\
+	 \textit{Parser ASCII}\\CSV ($N{=}59$)};
+
+% ---- Tahap 2
+\node[stageBox, right=0.30cm of t1] (t2)
+	{\textbf{\color{UnairBlue}Tahap 2}\\[2pt]
+	 Kalkulus Analitik\\Jacobian $\mathbf{J}$\\
+	 Gradien $\mathbf{g}$\\Hessian $\mathbf{H}$};
+
+% ---- Tahap 3
+\node[stageBox, right=0.30cm of t2] (t3)
+	{\textbf{\color{UnairBlue}Tahap 3}\\[2pt]
+	 Tebakan Awal\\$E_r^{(0)}{=}\arg\max(\sigma)$\\
+	 $\Gamma^{(0)}$ via FWHM\\$\sigma_{bg}^{(0)}{=}\min(\sigma)$};
+
+% ---- Tahap 4
+\node[stageBox, right=0.30cm of t3] (t4)
+	{\textbf{\color{UnairBlue}Tahap 4}\\[2pt]
+	 Newton-Raphson\\Solver\\
+	 $\mathbf{H}\Delta\mathbf{p}{=}{-}\mathbf{g}$\\
+	 $\varepsilon{=}10^{-6}$};
+
+% ---- Tahap 5
+\node[stageBox, right=0.30cm of t4] (t5)
+	{\textbf{\color{UnairBlue}Tahap 5}\\[2pt]
+	 Statistik \&\\Kovariansi\\
+	 $\chi^2_{red}$,\; $\mathbf{C}{=}2\mathbf{H}^{-1}$\\Korelasi $\boldsymbol{\rho}$};
+
+% ---- Tahap 6
+\node[stageBox, right=0.30cm of t5] (t6)
+	{\textbf{\color{UnairBlue}Tahap 6}\\[2pt]
+	 Noise Stress Test\\Monte Carlo\\
+	 $\eta{=}5\%,\,15\%,\,30\%$\\Laju Sukses};
+
+% ---- Tahap 7
+\node[stageBox, right=0.30cm of t6] (t7)
+	{\textbf{\color{UnairBlue}Tahap 7}\\[2pt]
+	 Visualisasi\\Kurva Fitting\\Konvergensi\\Peta Derau};
+
+% ---- END node
+\node[startEnd, right=0.30cm of t7] (stop)
+	{SELESAI\\[1pt]Laporan \&\\Validasi};
+
+% ---- Arrows
+\draw[stepArrow] (start) -- (t1);
+\draw[stepArrow] (t1)    -- (t2);
+\draw[stepArrow] (t2)    -- (t3);
+\draw[stepArrow] (t3)    -- (t4);
+\draw[stepArrow] (t4)    -- (t5);
+\draw[stepArrow] (t5)    -- (t6);
+\draw[stepArrow] (t6)    -- (t7);
+\draw[stepArrow] (t7)    -- (stop);
+
+% ---- Background band
+\begin{scope}[on background layer]
+	\node[fill=UnairBlue!4, rounded corners=5pt,
+		  fit=(start)(stop), inner sep=4pt] {};
+\end{scope}
+
+\end{tikzpicture}
+\end{center}
 \end{frame}
+
 
 % SLIDE 9
 \begin{frame}{Detail Arsitektur Pipeline (Tahap 1 -- 7)}
@@ -704,3 +795,4 @@
 \end{frame}
 
 \end{document}
+
