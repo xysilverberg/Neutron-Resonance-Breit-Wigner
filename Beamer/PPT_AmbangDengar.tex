@@ -1,0 +1,776 @@
+\documentclass[aspectratio=169, 10pt]{beamer}
+
+% =============================================================
+% 1. TEMA & KONFIGURASI
+% =============================================================
+\mode<presentation> {
+	\usetheme{Madrid}
+	\useinnertheme{circles}
+}
+
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+% NOTE: package 'physics' dihapus karena konflik dengan siunitx (\qty redefinition)
+\usepackage{siunitx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{ifthen}
+
+\graphicspath{{Images/}}
+
+% Helper: tampilkan gambar jika ada, placeholder jika tidak
+\newcommand{\safegraphics}[2][width=\textwidth]{%
+  \IfFileExists{#2}{%
+    \includegraphics[#1]{#2}%
+  }{%
+    \fbox{\begin{minipage}[c][2.5cm][c]{0.9\textwidth}%
+      \centering\footnotesize\color{gray}%
+      [Gambar: #2]%
+    \end{minipage}}%
+  }%
+}
+
+%===================Format Daftar Pustaka========
+\usepackage{csquotes}
+\usepackage[style=apa,sortcites=true,sorting=nyt,backend=biber]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Pustaka.bib}
+\setlength{\bibitemsep}{0.0\baselineskip}
+
+\usepackage{charter}
+\usefonttheme{professionalfonts}
+
+\definecolor{UnairBlue}{HTML}{174B89}
+\definecolor{UnairYellow}{HTML}{FFCC00}
+
+\setbeamercolor{palette primary}{bg=UnairBlue,fg=white}
+\setbeamercolor{palette secondary}{bg=UnairYellow,fg=UnairBlue}
+\setbeamercolor{palette tertiary}{bg=UnairBlue,fg=white}
+\setbeamercolor{palette quaternary}{bg=UnairBlue,fg=white}
+\setbeamercolor{structure}{fg=UnairBlue}
+\setbeamercolor{section in toc}{fg=UnairBlue}
+
+\setbeamerfont{title}{series=\bfseries,parent=structure}
+\setbeamerfont{frametitle}{series=\bfseries,parent=structure}
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{frametitle}{
+	\vspace{-0.03cm}
+	\begin{beamercolorbox}[
+		wd=\paperwidth,
+		ht=3ex,
+		dp=1ex,
+		leftskip=0.5em,
+		rightskip=0em
+		]{frametitle}
+		\hbox to 0.97\paperwidth{
+			\insertframetitle
+			\hfill
+			\raisebox{-0.17\height}{\includegraphics[height=0.75cm]{logo-unair.png}}
+		}
+	\end{beamercolorbox}
+}
+
+\setbeamertemplate{footline}
+{
+	\leavevmode%
+	\hbox{%
+		\begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{palette primary}%
+			\insertshortauthor
+		\end{beamercolorbox}%
+		\begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{palette secondary}%
+			\insertshorttitle
+		\end{beamercolorbox}%
+		\begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,right]{palette primary}%
+			\insertshortdate{}\hspace*{2em}
+			\insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+	\end{beamercolorbox}}
+	\vskip0pt
+}
+
+% FIX: hyperref token issue -- gunakan \texorpdfstring agar \\ tidak masuk PDF string
+\title[Ambang Dengar]{Taraf Intensitas Ambang Dengar Manusia}
+\subtitle{Percobaan M3 --- Laboratorium Fisika Eksperimental II}
+\author[Kelompok M3]{%
+	\texorpdfstring{%
+		Pradithya Putra Galang Islami (182241014) \\
+		Naufal Lutfian Hakim (182241015) \\
+		Hendra Maulana (182241043)%
+	}{%
+		Pradithya Putra Galang Islami, Naufal Lutfian Hakim, Hendra Maulana%
+	}%
+}
+\titlegraphic{\includegraphics[width=1.5cm]{logo-unair.png}}
+\institute[UNAIR]{%
+	\texorpdfstring{%
+		Laboratorium Biofisika \\
+		Departemen Fisika, Fakultas Sains dan Teknologi, Universitas Airlangga \\
+		\medskip
+		\textit{Dosen Pembimbing: Prof. Dr. Suryani Dyah Astuti, M.Si. \& Winarno, S.Si., M.T.}%
+	}{%
+		Laboratorium Biofisika, FST, Universitas Airlangga%
+	}%
+}
+\date[24 Agu 2026]{24 Agustus 2026}
+
+\begin{document}
+
+	\begin{frame}
+		\titlepage
+	\end{frame}
+
+	\begin{frame}{Outline}
+		\tableofcontents
+	\end{frame}
+
+	%=============================================================
+	% SECTION 1: PENDAHULUAN
+	%=============================================================
+	\section{Pendahuluan}
+
+	\begin{frame}{Tujuan Praktikum}
+		\begin{exampleblock}{Tujuan}
+			\begin{enumerate}
+				\item Mengenal karakteristik dan sifat fisis penjalaran gelombang bunyi sebagai gelombang mekanik longitudinal.
+				\item Memahami konsep taraf intensitas bunyi (dB) dan memformulasikannya sebagai fungsi kuadrat tegangan listrik \textit{input} transduser.
+				\item Menggambar dan menganalisis kurva respon ambang dengar manusia pada kertas grafik semi-logaritmis untuk telinga kanan dan telinga kiri.
+			\end{enumerate}
+		\end{exampleblock}
+
+		\begin{block}{Ringkasan Eksperimen}
+			\footnotesize
+			Pengukuran ambang dengar dilakukan pada 28 variasi frekuensi (20 Hz -- 20 kHz) menggunakan \textit{Digital Square Generator} (DSG) dan \textit{headphone} sebagai transduser. Nilai tegangan ambang ($V_{PP}$) diukur menggunakan osiloskop, sedangkan taraf intensitas direkam menggunakan \textit{Sound Level Meter} (SLM). Subjek uji adalah telinga kanan (Hendra Maulana) dan telinga kiri (Naufal Luthfian Hakim).
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Latar Belakang}
+		\begin{block}{Persepsi Bunyi dan Sistem Pendengaran Manusia}
+			\footnotesize
+			Sistem pendengaran manusia merupakan transduser biologis yang mengonversi gelombang tekanan mekanik menjadi sinyal saraf. Tanggapan fisiologis telinga bersifat non-linier dan sangat bergantung pada frekuensi, sehingga membutuhkan skala logaritmik (desibel) untuk merepresentasikannya secara kuantitatif \parencite{halliday2021}.
+		\end{block}
+
+		\begin{block}{Pentingnya Kajian Ambang Dengar}
+			\footnotesize
+			Kurva kontur kenyaringan setara ISO 226:2023 menunjukkan bahwa kepekaan telinga manusia tidak seragam di seluruh spektrum 20 Hz -- 20 kHz. Telinga paling sensitif pada rentang 1--4 kHz, di mana resonansi saluran telinga luar memaksimalkan transfer energi akustik ke membran timpani \parencite{moller2024}. Pemahaman ini penting dalam audiometri klinis, desain sistem audio, dan ergonomi akustik.
+		\end{block}
+
+		\begin{block}{Penemuan Kurva Ambang Dengar}
+			\footnotesize
+			Konsep intensitas dan taraf intensitas bunyi diformalkan oleh Harvey Fletcher dan Wilden A.\ Munson (1933) melalui eksperimen psikofisik yang menghasilkan kurva \textit{equal-loudness contour}, yang kemudian menjadi dasar standar ISO 226 \parencite{iso2023}.
+		\end{block}
+	\end{frame}
+
+	%=============================================================
+	% SECTION 2: DASAR TEORI
+	%=============================================================
+	\section{Dasar Teori}
+
+	\begin{frame}{Dasar Teori: Persamaan Gelombang Mekanik (1)}
+		\begin{block}{Persamaan Diferensial Gelombang Satu Dimensi}
+			Gelombang mekanik longitudinal merambat melalui medium kontinu berdasarkan perpindahan energi tanpa perpindahan massa. Dinamika rambatan gelombang harmonik dinyatakan melalui persamaan diferensial satu dimensi \parencite{halliday2021}:
+			\begin{equation}
+				\frac{\partial^{2}Y}{\partial x^{2}} = \frac{1}{v^{2}}\,\frac{\partial^{2}Y}{\partial t^{2}}
+			\end{equation}
+			dengan $Y(x,t)$ simpangan partikel medium pada posisi $x$ dan waktu $t$, serta $v$ laju rambat gelombang.
+		\end{block}
+
+		\begin{block}{Persamaan Simpangan Partikel}
+			Simpangan partikel medium akibat usikan gelombang sinusoidal:
+			\begin{equation}
+				Y = Y_{m}\sin(kx - \omega t)
+			\end{equation}
+			dengan $Y_{m}$ amplitudo simpangan maksimum, $k = 2\pi/\lambda$ bilangan gelombang, dan $\omega = 2\pi f$ frekuensi sudut.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Dasar Teori: Tekanan Akustik dan Intensitas Bunyi (2)}
+		\begin{block}{Amplitudo Tekanan Puncak}
+			Usikan partikel medium memicu fluktuasi tekanan akustik $p(x,t)$. Melalui modul elastisitas medium ($B=\rho_0 v^2$), amplitudo tekanan puncak ($p_m$) didefinisikan sebagai \parencite{halliday2021}:
+			\begin{equation}
+				p_{m} = Y_{m}\,k\,\rho_{0}\,v^{2}
+			\end{equation}
+			Fluktuasi tekanan berbanding lurus dengan amplitudo simpangan, frekuensi, massa jenis, dan kuadrat laju rambat bunyi.
+		\end{block}
+
+		\begin{block}{Intensitas Gelombang Bunyi}
+			Laju fluks energi akustik yang menembus satuan luas per satuan waktu mendefinisikan intensitas bunyi ($I$):
+			\begin{equation}
+				I = 2\pi^{2}\rho\,v\,Y_{m}^{2}\,f^{2}
+			\end{equation}
+			di mana $\rho$ kerapatan medium, $v$ kecepatan bunyi, $Y_m$ amplitudo simpangan, dan $f$ frekuensi gelombang.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Dasar Teori: Taraf Intensitas Bunyi (3)}
+		\begin{block}{Taraf Intensitas dalam Skala Desibel}
+			Tanggapan fisiologis telinga yang non-linier direpresentasikan dalam skala logaritmik. Taraf intensitas bunyi ($\beta$) dalam desibel (dB) dinyatakan dengan membandingkan intensitas terukur ($I$) terhadap $I_0 = 10^{-12}\ \text{W/m}^2$ \parencite{halliday2021}:
+			\begin{equation}
+				\beta = 10\,\log_{10}\!\left(\frac{I}{I_0}\right)
+			\end{equation}
+		\end{block}
+
+		\begin{block}{Taraf Intensitas Berbasis Tegangan Listrik}
+			Karena daya mekanik akustik transduser berbanding lurus dengan kuadrat tegangan masukan ($P \propto V^2$), taraf intensitas bunyi relatif ($\beta$) dapat dihitung melalui rasio tegangan puncak-ke-puncak \parencite{ward2022}:
+			\begin{equation}
+				\beta = 20\,\log_{10}\!\left(\frac{V}{V_0}\right)
+			\end{equation}
+			dengan $V$ tegangan masukan pada frekuensi uji dan $V_0$ tegangan referensi pada ambang dengar standar.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Dasar Teori: Model Taraf Intensitas Teoritis (4)}
+		\begin{block}{Taraf Intensitas Teoritis dari Parameter Kalibrasi}
+			Dengan mengintegrasikan hasil kalibrasi titik referensi (1 kHz) ke dalam Persamaan (6), taraf intensitas teoritis dinyatakan sebagai \parencite{zhao2023}:
+			\begin{equation}
+				TI_{\text{teori}} = TI_0 + 20\,\log_{10}\!\left(\frac{V_{PP}}{V_0}\right)
+			\end{equation}
+			dengan $TI_0$ taraf intensitas pada 1 kHz, $V_{PP}$ amplitudo tegangan puncak-ke-puncak, dan $V_0$ tegangan ambang referensi.
+		\end{block}
+
+		\begin{block}{Selisih Terukur dan Teoritis}
+			\begin{equation}
+				\Delta TI = TI_{\text{rata}^2} - TI_{\text{teori}}
+			\end{equation}
+		\end{block}
+
+		\begin{block}{Root Mean Square Error (RMSE)}
+			\begin{equation}
+				\text{RMSE} = \sqrt{\frac{1}{N}\sum_{i=1}^{N}(\Delta TI_i)^{2}}
+			\end{equation}
+		\end{block}
+	\end{frame}
+
+	%=============================================================
+	% SECTION 3: METODE EKSPERIMEN
+	%=============================================================
+	\section{Metode Eksperimen}
+
+	\begin{frame}{Alat dan Bahan}
+		\begin{columns}[T]
+			\column{0.55\textwidth}
+			\begin{block}{Alat}
+				\footnotesize
+				\begin{itemize}
+					\item \textbf{Digital Square Generator (DSG):} pembangkit sinyal persegi digital dan pengatur amplitudo.
+					\item \textbf{Headphone Audio:} transduser elektroakustik pengubah daya listrik menjadi energi mekanik.
+					\item \textbf{Osiloskop Digital:} pengukur nilai tegangan puncak-ke-puncak ($V_{PP}$).
+					\item \textbf{Sound Level Meter (SLM):} alat ukur taraf intensitas bunyi dalam satuan dB.
+					\item \textbf{Kabel Penghubung BNC/Audio:} penghubung interkoneksi jalur sinyal.
+				\end{itemize}
+			\end{block}
+
+			\column{0.42\textwidth}
+			\begin{block}{Subjek Uji (Testi)}
+				\begin{itemize}
+					\item \textbf{Telinga Kanan:} Hendra Maulana
+					\item \textbf{Telinga Kiri:} Naufal Luthfian Hakim
+				\end{itemize}
+			\end{block}
+			\vspace{0.2cm}
+			\begin{exampleblock}{Variabel Eksperimen}
+				\footnotesize
+				\begin{itemize}
+					\item 28 titik frekuensi: $20\ \text{Hz}$ -- $20\ \text{kHz}$, spasi logaritmik.
+					\item Titik referensi kalibrasi: $f_0 = 1\ \text{kHz}$.
+					\item Pengulangan: 3 kali pembacaan $TI$ per frekuensi.
+				\end{itemize}
+			\end{exampleblock}
+		\end{columns}
+	\end{frame}
+
+	\begin{frame}{Prosedur Kerja}
+		\begin{columns}[T]
+			\column{0.57\textwidth}
+			\begin{block}{Tahapan Percobaan}
+				\scriptsize
+				\begin{enumerate}
+					\item \textbf{Kalibrasi Referensi (1 kHz):} Menyusun rangkaian DSG--headphone--osiloskop. Mengatur DSG pada 1 kHz. Subjek menaikkan volume hingga sinyal pertama kali terdengar, lalu mencatat $V_0$ dan $TI_0$.
+					\item \textbf{Pengukuran Spektrum (20 Hz -- 20 kHz):} Melakukan pengujian pada 28 variasi frekuensi logaritmik. Pada tiap frekuensi, testi menaikkan volume dari minimum hingga batas ambang, lalu mencatat $V_{PP}$ dan $TI$ (3 pengulangan).
+					\item \textbf{Pengujian Telinga Kontralateral:} Mengubah posisi sakelar untuk telinga kiri. Mengulangi seluruh tahapan kalibrasi dan pengukuran pada 28 variasi frekuensi.
+				\end{enumerate}
+			\end{block}
+
+			\column{0.40\textwidth}
+			\begin{block}{Dokumentasi Percobaan}
+				\centering
+				\safegraphics[width=0.9\textwidth]{Dokumentasi1.jpeg}\\[2pt]
+				\textit{\scriptsize Pengujian respon pendengaran pada praktikan}
+			\end{block}
+			\vspace{0.15cm}
+			\begin{block}{Pembacaan Osiloskop}
+				\centering
+				\safegraphics[width=0.9\textwidth]{Dokumentasi2.jpeg}\\[2pt]
+				\textit{\scriptsize Pengukuran tegangan ambang menggunakan osiloskop}
+			\end{block}
+		\end{columns}
+	\end{frame}
+
+	%=============================================================
+	% SECTION 4: DATA HASIL PENGAMATAN
+	%=============================================================
+	\section{Data Hasil Pengamatan}
+
+	\begin{frame}{Data Hasil Pengamatan: Parameter Kalibrasi}
+		\begin{block}{Tabel 1. Parameter Kalibrasi Ambang Dengar Titik Referensi (1 kHz)}
+			\centering
+			\vspace{0.15cm}
+			\begin{tabular}{lcccc}
+				\toprule
+				\textbf{Subjek Uji} & \textbf{Nama Praktikan} & $f_0$ \textbf{(kHz)} & $V_0$ \textbf{(mV$_{PP}$)} & $TI_0$ \textbf{(dB)} \\
+				\midrule
+				Telinga Kanan & Hendra Maulana        & 1 & 2{,}00 & 60{,}00 \\
+				Telinga Kiri  & Naufal Luthfian Hakim & 1 & 7{,}00 & 76{,}00 \\
+				\bottomrule
+			\end{tabular}
+		\end{block}
+
+		\vspace{0.25cm}
+		\begin{exampleblock}{Interpretasi Kalibrasi}
+			\begin{itemize}
+				\item Telinga kanan memerlukan $V_0 = 2{,}00\ \text{mV}_{PP}$ pada 1 kHz, jauh lebih rendah dibandingkan telinga kiri ($V_0 = 7{,}00\ \text{mV}_{PP}$), menunjukkan sensitivitas lebih tinggi.
+				\item Nilai $TI_0$ telinga kiri ($76{,}00\ \text{dB}$) lebih tinggi dari telinga kanan ($60{,}00\ \text{dB}$), mengindikasikan kebutuhan intensitas stimulus yang lebih besar untuk mencapai ambang dengar.
+			\end{itemize}
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}{Data Hasil Pengamatan: Telinga Kanan (1)}
+		\scriptsize
+		\textbf{Tabel 2. Data Respon Ambang Dengar Telinga Kanan -- Hendra Maulana (No.\ 1--14)}
+		\vspace{0.1cm}
+		\begin{tabular}{cccccc}
+			\toprule
+			No & Frekuensi (Hz) & $V_{PP}$ (mV) & $TI_{\text{rata}^2}$ (dB) & $s$ (dB) & $TI_{\text{teori}}$ (dB) \\
+			\midrule
+			1  & 20     & 6  & 53{,}467 & 2{,}108  & 69{,}542 \\
+			2  & 25     & 7  & 53{,}567 & 2{,}371  & 70{,}881 \\
+			3  & 30     & 8  & 52{,}867 & 2{,}157  & 72{,}041 \\
+			4  & 40     & 8  & 55{,}200 & 2{,}955  & 72{,}041 \\
+			5  & 60     & 9  & 61{,}767 & 3{,}859  & 73{,}064 \\
+			6  & 80     & 9  & 54{,}500 & 1{,}572  & 73{,}064 \\
+			7  & 100    & 9  & 60{,}967 & 6{,}326  & 73{,}064 \\
+			8  & 120    & 10 & 59{,}167 & 5{,}604  & 73{,}979 \\
+			9  & 150    & 9  & 67{,}567 & 0{,}924  & 73{,}064 \\
+			10 & 200    & 10 & 61{,}967 & 0{,}231  & 73{,}979 \\
+			11 & 250    & 10 & 51{,}800 & 2{,}081  & 73{,}979 \\
+			12 & 300    & 11 & 61{,}133 & 8{,}329  & 74{,}807 \\
+			13 & 400    & 11 & 60{,}667 & 6{,}852  & 74{,}807 \\
+			14 & 600    & 10 & 60{,}167 & 8{,}764  & 73{,}979 \\
+			\bottomrule
+		\end{tabular}
+	\end{frame}
+
+	\begin{frame}{Data Hasil Pengamatan: Telinga Kanan (2)}
+		\scriptsize
+		\textbf{Tabel 2 (Lanjutan). Data Telinga Kanan -- Frekuensi Menengah-Tinggi (No.\ 15--28)}
+		\vspace{0.1cm}
+		\begin{tabular}{cccccc}
+			\toprule
+			No & Frekuensi (Hz) & $V_{PP}$ (mV) & $TI_{\text{rata}^2}$ (dB) & $s$ (dB) & $TI_{\text{teori}}$ (dB) \\
+			\midrule
+			15 & 800    & 11 & 67{,}800 & 3{,}559  & 74{,}807 \\
+			16 & 1000   & 2  & 58{,}767 & 2{,}501  & 60{,}000 \\
+			17 & 1200   & 9  & 75{,}633 & 22{,}107 & 73{,}064 \\
+			18 & 1500   & 4  & 62{,}467 & 4{,}823  & 66{,}021 \\
+			19 & 2000   & 5  & 51{,}533 & 1{,}557  & 67{,}959 \\
+			20 & 2500   & 6  & 53{,}600 & 9{,}021  & 69{,}542 \\
+			21 & 3000   & 9  & 53{,}600 & 7{,}950  & 73{,}064 \\
+			22 & 4000   & 7  & 60{,}933 & 2{,}108  & 70{,}881 \\
+			23 & 6000   & 9  & 57{,}767 & 1{,}106  & 73{,}064 \\
+			24 & 8000   & 10 & 59{,}933 & 2{,}875  & 73{,}979 \\
+			25 & 10000  & 11 & 58{,}667 & 6{,}735  & 74{,}807 \\
+			26 & 12000  & 10 & 61{,}567 & 2{,}203  & 73{,}979 \\
+			27 & 15000  & 11 & 64{,}000 & 4{,}371  & 74{,}807 \\
+			28 & 20000  & 10 & 64{,}733 & 3{,}650  & 73{,}979 \\
+			\bottomrule
+		\end{tabular}
+	\end{frame}
+
+	\begin{frame}{Data Hasil Pengamatan: Telinga Kiri (1)}
+		\scriptsize
+		\textbf{Tabel 3. Data Respon Ambang Dengar Telinga Kiri -- Naufal Luthfian Hakim (No.\ 1--14)}
+		\vspace{0.1cm}
+		\begin{tabular}{cccccc}
+			\toprule
+			No & Frekuensi (Hz) & $V_{PP}$ (mV) & $TI_{\text{rata}^2}$ (dB) & $s$ (dB) & $TI_{\text{teori}}$ (dB) \\
+			\midrule
+			1  & 20     & 10 & 62{,}000 & 9{,}945  & 79{,}098 \\
+			2  & 25     & 9  & 69{,}733 & 10{,}385 & 78{,}183 \\
+			3  & 30     & 9  & 57{,}800 & 12{,}569 & 78{,}183 \\
+			4  & 40     & 8  & 62{,}833 & 3{,}755  & 77{,}160 \\
+			5  & 60     & 9  & 62{,}967 & 7{,}881  & 78{,}183 \\
+			6  & 80     & 9  & 61{,}733 & 7{,}177  & 78{,}183 \\
+			7  & 100    & 8  & 61{,}400 & 5{,}323  & 77{,}160 \\
+			8  & 120    & 8  & 61{,}300 & 6{,}585  & 77{,}160 \\
+			9  & 150    & 8  & 55{,}833 & 4{,}750  & 77{,}160 \\
+			10 & 200    & 7  & 58{,}233 & 13{,}042 & 76{,}000 \\
+			11 & 250    & 8  & 62{,}200 & 1{,}664  & 77{,}160 \\
+			12 & 300    & 7  & 62{,}200 & 5{,}890  & 76{,}000 \\
+			13 & 400    & 7  & 58{,}467 & 4{,}210  & 76{,}000 \\
+			14 & 600    & 7  & 59{,}900 & 2{,}100  & 76{,}000 \\
+			\bottomrule
+		\end{tabular}
+	\end{frame}
+
+	\begin{frame}{Data Hasil Pengamatan: Telinga Kiri (2)}
+		\scriptsize
+		\textbf{Tabel 3 (Lanjutan). Data Telinga Kiri -- Frekuensi Menengah-Tinggi (No.\ 15--28)}
+		\vspace{0.1cm}
+		\begin{tabular}{cccccc}
+			\toprule
+			No & Frekuensi (Hz) & $V_{PP}$ (mV) & $TI_{\text{rata}^2}$ (dB) & $s$ (dB) & $TI_{\text{teori}}$ (dB) \\
+			\midrule
+			15 & 800    & 7  & 63{,}033 & 5{,}000  & 76{,}000 \\
+			16 & 1000   & 7  & 52{,}500 & 2{,}921  & 76{,}000 \\
+			17 & 1200   & 8  & 57{,}067 & 3{,}066  & 77{,}160 \\
+			18 & 1500   & 7  & 58{,}200 & 4{,}657  & 76{,}000 \\
+			19 & 2000   & 8  & 57{,}300 & 4{,}976  & 77{,}160 \\
+			20 & 2500   & 8  & 57{,}600 & 6{,}594  & 77{,}160 \\
+			21 & 3000   & 8  & 58{,}367 & 3{,}188  & 77{,}160 \\
+			22 & 4000   & 8  & 73{,}567 & 23{,}851 & 77{,}160 \\
+			23 & 6000   & 13 & 58{,}567 & 1{,}650  & 81{,}377 \\
+			24 & 8000   & 13 & 56{,}433 & 2{,}082  & 81{,}377 \\
+			25 & 10000  & 15 & 61{,}700 & 2{,}762  & 82{,}620 \\
+			26 & 12000  & 16 & 63{,}933 & 5{,}052  & 83{,}180 \\
+			27 & 15000  & 16 & 56{,}000 & 8{,}577  & 83{,}180 \\
+			28 & 20000  & 16 & 51{,}867 & 5{,}680  & 83{,}180 \\
+			\bottomrule
+		\end{tabular}
+	\end{frame}
+
+	%=============================================================
+	% SECTION 5: ANALISIS DATA
+	%=============================================================
+	\section{Analisis Data}
+
+	\begin{frame}{Analisis Data: Persamaan Taraf Intensitas Teoritis}
+		\begin{block}{Model Teoritis Berbasis Tegangan (Persamaan 7)}
+			\begin{equation*}
+				TI_{\text{teori}} = TI_0 + 20\,\log_{10}\!\left(\frac{V_{PP}}{V_0}\right)
+			\end{equation*}
+		\end{block}
+
+		\begin{columns}[T]
+			\column{0.48\textwidth}
+			\begin{block}{Telinga Kanan: $V_0 = 2{,}00$ mV, $TI_0 = 60{,}00$ dB}
+				\footnotesize
+				\begin{equation*}
+					TI_{\text{teori,kanan}} = 60{,}00 + 20\,\log_{10}\!\!\left(\frac{V_{PP}}{2{,}00}\right)
+				\end{equation*}
+				\textbf{Contoh} ($f = 20$ Hz, $V_{PP} = 6$ mV):
+				\begin{align*}
+					TI_{\text{teori}} &= 60 + 20\log(6/2) = 69{,}54\ \text{dB}\\
+					\Delta TI &= 53{,}47 - 69{,}54 = -16{,}08\ \text{dB}
+				\end{align*}
+			\end{block}
+
+			\column{0.48\textwidth}
+			\begin{block}{Telinga Kiri: $V_0 = 7{,}00$ mV, $TI_0 = 76{,}00$ dB}
+				\footnotesize
+				\begin{equation*}
+					TI_{\text{teori,kiri}} = 76{,}00 + 20\,\log_{10}\!\!\left(\frac{V_{PP}}{7{,}00}\right)
+				\end{equation*}
+				\textbf{Contoh} ($f = 20$ Hz, $V_{PP} = 10$ mV):
+				\begin{align*}
+					TI_{\text{teori}} &= 76 + 20\log(10/7) = 79{,}10\ \text{dB}\\
+					\Delta TI &= 62{,}00 - 79{,}10 = -17{,}10\ \text{dB}
+				\end{align*}
+			\end{block}
+		\end{columns}
+	\end{frame}
+
+	\begin{frame}{Analisis Data: Perhitungan RMSE dan Statistik}
+		\begin{block}{Rumus RMSE (Persamaan 9)}
+			\begin{equation*}
+				\text{RMSE} = \sqrt{\frac{1}{N}\sum_{i=1}^{N}(\Delta TI_i)^{2}}
+			\end{equation*}
+		\end{block}
+
+		\begin{exampleblock}{Tabel 6. Ringkasan Statistik Komparatif Sensitivitas Pendengaran}
+			\centering
+			\vspace{0.1cm}
+			\small
+			\begin{tabular}{lcc}
+				\toprule
+				\textbf{Parameter Psikoakustik} & \textbf{Telinga Kanan} & \textbf{Telinga Kiri} \\
+				\midrule
+				Rerata $TI$ terukur & 59{,}49 dB & 60{,}10 dB \\
+				Frekuensi Paling Sensitif ($TI_{\min}$) & 2000 Hz (51{,}53 dB) & 20 kHz (51{,}87 dB) \\
+				Titik Amplitudo Terendah ($V_{\min}$) & 1000 Hz (2 mV) & 200--1500 Hz (7 mV) \\
+				Rerata Selisih ($\overline{\Delta TI}$) & $-12{,}730$ dB & $-18{,}129$ dB \\
+				Standar Deviasi Selisih ($s_{\Delta}$) & $5{,}689$ dB & $5{,}407$ dB \\
+				\textbf{RMSE} & \textbf{13{,}902 dB} & \textbf{18{,}890 dB} \\
+				\bottomrule
+			\end{tabular}
+		\end{exampleblock}
+
+		\begin{block}{Catatan}
+			\footnotesize
+			$\Delta TI$ negatif secara konsisten menunjukkan nilai terukur lebih rendah dari prediksi teoretis, akibat respon frekuensi transduser yang tidak linier, kebocoran akustik SLM, dan batas derau ruangan \parencite{timdosen2026}.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Analisis Data: Grafik Respon Ambang Dengar}
+		\begin{columns}[T]
+			\column{0.50\textwidth}
+			\centering
+			\safegraphics[width=\textwidth]{Grafik Kanan.png}\\
+			\textit{\footnotesize Gambar 2a. Kurva ambang dengar telinga kanan beserta model teoretis}
+
+			\column{0.50\textwidth}
+			\centering
+			\safegraphics[width=\textwidth]{Grafik Kiri.png}\\
+			\textit{\footnotesize Gambar 2b. Kurva ambang dengar telinga kiri beserta model teoretis}
+		\end{columns}
+
+		\vspace{0.15cm}
+		\begin{block}{Interpretasi Grafik}
+			\footnotesize
+			Pada skala semi-logaritmis, nilai $TI$ terukur secara konsisten berada di bawah kurva model teoritis. Penurunan sensitivitas tampak pada frekuensi sangat rendah ($<100$ Hz) dan sangat tinggi ($>10$ kHz), selaras dengan kurva Fletcher--Munson.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Analisis Data: Grafik Perbandingan Telinga Kanan vs.\ Kiri}
+		\centering
+		\safegraphics[width=0.68\textwidth]{Grafik Perbandingan.png}
+
+		\begin{block}{Interpretasi}
+			\footnotesize
+			Gambar 3 menampilkan perbandingan komparatif respon taraf intensitas ambang dengar antara telinga kanan dan kiri. Pola kurva telinga kanan menunjukkan lembah yang lebih jelas pada rentang 1--2 kHz, mengindikasikan sensitivitas lebih tinggi pada rentang frekuensi percakapan dibandingkan telinga kiri.
+		\end{block}
+	\end{frame}
+
+	%=============================================================
+	% SECTION 6: PEMBAHASAN
+	%=============================================================
+	\section{Pembahasan}
+
+	\begin{frame}{Pembahasan (1): Karakteristik Ambang Dengar}
+		\begin{itemize}
+			\item \textbf{Kepekaan Tidak Seragam terhadap Frekuensi:}
+			Ambang dengar manusia terbukti tidak seragam di seluruh spektrum 20 Hz--20 kHz. $TI_{\min}$ telinga kanan ($51{,}53$ dB pada 2 kHz) bersesuaian dengan kurva ISO 226:2023 dan kurva Fletcher--Munson \parencite{iso2023}.
+
+			\vspace{0.15cm}
+			\item \textbf{Resonansi Saluran Telinga Luar:}
+			Sensitivitas maksimum pada 2--4 kHz disebabkan oleh efek resonansi saluran telinga luar (\textit{ear canal resonance}). Saluran telinga berperan sebagai pipa organa tertutup satu ujung (panjang $\sim\!2{,}5$ cm) dengan frekuensi resonansi alami sekitar 2{,}5--4 kHz, memaksimalkan transfer daya akustik ke membran timpani \parencite{moller2024}.
+
+			\vspace{0.15cm}
+			\item \textbf{Hubungan dengan Hukum Taraf Intensitas (Pers.\ 5 dan 6):}
+			Skala desibel digunakan karena telinga manusia merespons intensitas secara logaritmik ($\beta \propto \log I$), sehingga rentang dinamisnya yang sangat lebar ($10^{-12}$ hingga $10^{2}\ \text{W/m}^2$) dapat direpresentasikan dalam rentang 0--130 dB.
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}{Pembahasan (2): Asimetri Interaural dan Evaluasi Model}
+		\begin{itemize}
+			\item \textbf{Asimetri Interaural:}
+			Meskipun rata-rata $TI$ kedua telinga berdekatan (59{,}49 dB vs.\ 60{,}10 dB), terdapat perbedaan signifikan pada tegangan referensi ($V_0 = 2$ mV vs.\ $7$ mV). Asimetri ini umum dalam audiometri subjektif, dipengaruhi oleh variasi kelelahan pendengaran sesaat, perbedaan geometris liang telinga, tingkat atensi psikofisik, dan kekedapan bantalan \textit{headphone} \parencite{ward2022}.
+
+			\vspace{0.15cm}
+			\item \textbf{Deviasi Model Teoritis --- Penyebab Selisih Negatif:}
+			RMSE $= 13{,}902$ dB (kanan) dan $18{,}890$ dB (kiri) dengan $\overline{\Delta TI}$ negatif konsisten disebabkan oleh:
+			\begin{enumerate}
+				\footnotesize
+				\item \textbf{Respon frekuensi headphone tidak linier:} efisiensi konversi daya listrik ke tekanan akustik bervariasi di seluruh 20 Hz--20 kHz.
+				\item \textbf{Kebocoran akustik SLM:} sensor di luar liang telinga mengalami atenuasi berbeda dari tekanan nyata di membran timpani \parencite{ward2022}.
+				\item \textbf{Batas derau ruangan:} SLM memiliki batas sekitar 45--55 dB \parencite{timdosen2026}.
+			\end{enumerate}
+
+			\vspace{0.1cm}
+			\item \textbf{Validitas Data:}
+			Meskipun terdapat deviasi, model teoritis mampu menangkap tren perubahan $TI$ terhadap variasi amplitudo input. Hasil pengukuran tetap valid untuk analisis karakteristik ambang dengar.
+		\end{itemize}
+	\end{frame}
+
+	%=============================================================
+	% SECTION 7: KESIMPULAN DAN SARAN
+	%=============================================================
+	\section{Kesimpulan dan Saran}
+
+	\begin{frame}{Kesimpulan}
+		\begin{exampleblock}{Tabel Hasil Eksperimen vs.\ Pembanding Teoritis}
+			\centering
+			\tiny
+			\begin{tabular}{lcc}
+				\toprule
+				\textbf{Parameter} & \textbf{Telinga Kanan} & \textbf{Telinga Kiri} \\
+				\midrule
+				\textbf{Hasil:} $\overline{TI}$ terukur & 59{,}49 dB & 60{,}10 dB \\
+				\textbf{Hasil:} $TI_{\min}$ (frekuensi paling sensitif) & 51{,}53 dB pada 2 kHz & 51{,}87 dB pada 20 kHz \\
+				\textbf{Hasil:} $V_0$ referensi (1 kHz) & 2{,}00 mV$_{PP}$ & 7{,}00 mV$_{PP}$ \\
+				\midrule
+				\textbf{Pembanding:} RMSE & 13{,}902 dB & 18{,}890 dB \\
+				\textbf{Pembanding:} $\overline{\Delta TI}$ (terukur $-$ teoritis) & $-12{,}730$ dB & $-18{,}129$ dB \\
+				\bottomrule
+			\end{tabular}
+		\end{exampleblock}
+
+		\begin{block}{Kesimpulan}
+			\footnotesize
+			\begin{enumerate}
+				\item Gelombang bunyi merambat sebagai gelombang mekanik longitudinal; intensitas akustik sebanding dengan kuadrat amplitudo tegangan listrik masukan transduser.
+				\item Kepekaan ambang dengar manusia tidak linier terhadap frekuensi, dengan sensitivitas maksimum pada 1--2 kHz selaras dengan kurva ISO 226.
+				\item Telinga kanan: $TI_{\min} = 51{,}53$ dB pada 2 kHz ($V_0=2$ mV); telinga kiri: $TI_{\min} = 51{,}87$ dB pada 20 kHz serta $52{,}50$ dB pada 1 kHz ($V_0=7$ mV).
+				\item Model $TI = TI_0 + 20\log_{10}(V_{PP}/V_0)$ merepresentasikan kurva respon dengan RMSE $= 13{,}90$ dB (kanan) dan $18{,}89$ dB (kiri).
+			\end{enumerate}
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Saran}
+		\begin{block}{Saran untuk Praktikum Selanjutnya}
+			\begin{itemize}
+				\item Menerapkan generator sinyal gelombang sinus murni (\textit{pure sine wave generator}) untuk meminimalkan distorsi harmonik dan interferensi nada atas gelombang persegi dari \textit{Digital Square Generator} (DSG), sehingga hasil pengukuran taraf intensitas lebih akurat.
+			\end{itemize}
+		\end{block}
+	\end{frame}
+
+	%=============================================================
+	% SECTION 8: LAMPIRAN
+	%=============================================================
+	\section{Lampiran}
+
+	\begin{frame}{Lampiran: Dokumentasi Pelaksanaan Praktikum}
+		\centering
+		\begin{columns}[T]
+			\column{0.48\textwidth}
+			\centering
+			\safegraphics[width=0.85\textwidth]{Dokumentasi1.jpeg}\\[4pt]
+			\textit{\footnotesize Gambar 4. Pengujian respon pendengaran frekuensi audio pada praktikan}
+
+			\column{0.48\textwidth}
+			\centering
+			\safegraphics[width=0.85\textwidth]{Dokumentasi2.jpeg}\\[4pt]
+			\textit{\footnotesize Gambar 5. Pengukuran tegangan ambang dengar menggunakan osiloskop}
+		\end{columns}
+		\vspace{0.25cm}
+		\footnotesize\textit{Dokumentasi Percobaan -- Laboratorium Biofisika, FST UNAIR, 24 Agustus 2026}
+	\end{frame}
+
+	\begin{frame}{Lampiran: Rumus yang Digunakan (1)}
+		\tiny
+		\begin{columns}[T]
+			\column{0.48\textwidth}
+			\textbf{Persamaan Diferensial Gelombang}
+			\begin{equation*}
+				\frac{\partial^{2}Y}{\partial x^{2}} = \frac{1}{v^{2}}\,\frac{\partial^{2}Y}{\partial t^{2}}
+			\end{equation*}
+
+			\textbf{Simpangan Partikel}
+			\begin{equation*}
+				Y = Y_{m}\sin(kx - \omega t)
+			\end{equation*}
+
+			\textbf{Amplitudo Tekanan Puncak}
+			\begin{equation*}
+				p_{m} = Y_{m}\,k\,\rho_{0}\,v^{2}
+			\end{equation*}
+
+			\textbf{Intensitas Gelombang Bunyi}
+			\begin{equation*}
+				I = 2\pi^{2}\rho\,v\,Y_{m}^{2}\,f^{2}
+			\end{equation*}
+
+			\vspace{0.15cm}
+			\textbf{Taraf Intensitas Bunyi (dB)}
+			\begin{equation*}
+				\beta = 10\,\log_{10}\!\left(\frac{I}{I_0}\right), \quad I_0 = 10^{-12}\ \text{W/m}^2
+			\end{equation*}
+
+			\column{0.48\textwidth}
+			\textbf{Taraf Intensitas Berbasis Tegangan}
+			\begin{equation*}
+				\beta = 20\,\log_{10}\!\left(\frac{V}{V_0}\right)
+			\end{equation*}
+
+			\textbf{Model Taraf Intensitas Teoritis}
+			\begin{equation*}
+				TI_{\text{teori}} = TI_0 + 20\,\log_{10}\!\left(\frac{V_{PP}}{V_0}\right)
+			\end{equation*}
+
+			\textbf{Selisih $TI$ Terukur dan Teoritis}
+			\begin{equation*}
+				\Delta TI = TI_{\text{rata}^2} - TI_{\text{teori}}
+			\end{equation*}
+
+			\textbf{Root Mean Square Error (RMSE)}
+			\begin{equation*}
+				\text{RMSE} = \sqrt{\frac{1}{N}\sum_{i=1}^{N}(\Delta TI_i)^{2}}
+			\end{equation*}
+
+			\vspace{0.15cm}
+			\textbf{Hasil:}\\
+			Telinga Kanan: $\text{RMSE} = 13{,}902\ \text{dB}$\\
+			Telinga Kiri:\quad $\text{RMSE} = 18{,}890\ \text{dB}$
+		\end{columns}
+	\end{frame}
+
+	\begin{frame}{Lampiran: Rumus yang Digunakan (2) --- Contoh Perhitungan}
+		\tiny
+		\begin{columns}[T]
+			\column{0.48\textwidth}
+			\textbf{Telinga Kanan} ($V_0=2{,}00$ mV, $TI_0=60{,}00$ dB)\\[3pt]
+
+			$f = 20$ Hz, $V_{PP} = 6$ mV:
+			\begin{align*}
+				TI_{\text{teori}} &= 60 + 20\log(6/2) = 69{,}54\ \text{dB}\\
+				\Delta TI &= 53{,}47 - 69{,}54 = -16{,}08\ \text{dB}
+			\end{align*}
+
+			$f = 1000$ Hz (Ref.), $V_{PP} = 2$ mV:
+			\begin{align*}
+				TI_{\text{teori}} &= 60 + 20\log(2/2) = 60{,}00\ \text{dB}\\
+				\Delta TI &= 58{,}77 - 60{,}00 = -1{,}23\ \text{dB}
+			\end{align*}
+
+			$f = 2000$ Hz, $V_{PP} = 5$ mV:
+			\begin{align*}
+				TI_{\text{teori}} &= 60 + 20\log(5/2) = 67{,}96\ \text{dB}\\
+				\Delta TI &= 51{,}53 - 67{,}96 = -16{,}43\ \text{dB}
+			\end{align*}
+
+			\column{0.48\textwidth}
+			\textbf{Telinga Kiri} ($V_0=7{,}00$ mV, $TI_0=76{,}00$ dB)\\[3pt]
+
+			$f = 20$ Hz, $V_{PP} = 10$ mV:
+			\begin{align*}
+				TI_{\text{teori}} &= 76 + 20\log(10/7) = 79{,}10\ \text{dB}\\
+				\Delta TI &= 62{,}00 - 79{,}10 = -17{,}10\ \text{dB}
+			\end{align*}
+
+			$f = 1000$ Hz (Ref.), $V_{PP} = 7$ mV:
+			\begin{align*}
+				TI_{\text{teori}} &= 76 + 20\log(7/7) = 76{,}00\ \text{dB}\\
+				\Delta TI &= 52{,}50 - 76{,}00 = -23{,}50\ \text{dB}
+			\end{align*}
+
+			$f = 4000$ Hz, $V_{PP} = 8$ mV:
+			\begin{align*}
+				TI_{\text{teori}} &= 76 + 20\log(8/7) = 77{,}16\ \text{dB}\\
+				\Delta TI &= 73{,}57 - 77{,}16 = -3{,}59\ \text{dB}
+			\end{align*}
+		\end{columns}
+	\end{frame}
+
+	%=============================================================
+	% PENUTUP
+	%=============================================================
+	\begin{frame}
+		\centering
+		\Huge \textbf{Terima Kasih} \\
+		\vspace{0.5cm}
+		\large Ada Pertanyaan?
+	\end{frame}
+
+	\section{Daftar Pustaka}
+	\begin{frame}{Daftar Pustaka}
+		\footnotesize
+		\printbibliography[heading=none]
+	\end{frame}
+
+\end{document}
