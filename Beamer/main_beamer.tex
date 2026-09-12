@@ -293,96 +293,130 @@
 % =============================================================
 \section{Arsitektur Pipeline Komputasi}
 
-% SLIDE 8 — TikZ Horizontal Flowchart
+% SLIDE 8 — TikZ Snake (Ular) Flowchart
 \begin{frame}{Pipeline Komputasi Numerik 7 Tahap}
 \tikzset{
-	stageBox/.style={
-		draw=UnairBlue, fill=UnairBlue!12, line width=0.8pt,
-		rounded corners=3pt,
-		minimum width=1.85cm, minimum height=1.55cm,
-		text width=1.75cm, align=center, font=\fontsize{5.5pt}{6.8pt}\selectfont
+	sBox/.style={
+		draw=UnairBlue, fill=UnairBlue!10, line width=0.9pt,
+		rounded corners=4pt,
+		minimum width=2.55cm, minimum height=1.9cm,
+		text width=2.45cm, align=center,
+		font=\fontsize{6pt}{7.5pt}\selectfont
 	},
-	stepArrow/.style={
-		-{Stealth[length=4pt,width=3.5pt]},
-		draw=UnairYellow!80!orange, line width=1.4pt
+	sArrow/.style={
+		-{Stealth[length=5pt,width=4pt]},
+		draw=UnairYellow!85!orange, line width=1.6pt
 	},
-	startEnd/.style={
-		draw=DarkSlate, fill=DarkSlate!15, line width=0.8pt,
-		ellipse, minimum width=1.4cm, minimum height=0.7cm,
-		text width=1.3cm, align=center, font=\fontsize{5pt}{6pt}\selectfont\bfseries
+	sBend/.style={
+		-{Stealth[length=5pt,width=4pt]},
+		draw=ForestGreen!70!UnairBlue, line width=1.6pt,
+		rounded corners=8pt
 	},
-	stageLabel/.style={
-		font=\fontsize{5pt}{6pt}\selectfont\bfseries\color{UnairBlue},
-		above=2pt
-	}
+	sNode/.style={
+		draw=DarkSlate, fill=DarkSlate!18, line width=1pt,
+		ellipse, minimum width=1.6cm, minimum height=0.85cm,
+		text width=1.5cm, align=center,
+		font=\fontsize{5.5pt}{6.5pt}\selectfont\bfseries
+	},
+	rowLabel/.style={font=\fontsize{5pt}{5pt}\selectfont\itshape\color{DarkSlate}}
 }
+\vspace{-0.15cm}
 \begin{center}
-\begin{tikzpicture}[node distance=0.38cm and 0.30cm]
+\begin{tikzpicture}
 
-% ---- START node
-\node[startEnd] (start) {MULAI\\[1pt]Data EXFOR};
+%% ═══════════ BARIS 1: kiri → kanan ═══════════
+\node[sNode] (start) at (0, 0)
+	{MULAI\\[2pt]Data EXFOR};
 
-% ---- Tahap 1
-\node[stageBox, right=0.30cm of start] (t1)
-	{\textbf{\color{UnairBlue}Tahap 1}\\[2pt]
-	 Akuisisi Data\\IAEA-NDS EXFOR\\Entry 10224002\\
-	 \textit{Parser ASCII}\\CSV ($N{=}59$)};
+\node[sBox, right=0.35cm of start] (t1) at (2.1,0)
+	{\textbf{\color{UnairBlue}Tahap 1}\\[3pt]
+	 Akuisisi Data\\[-1pt]
+	 IAEA-NDS EXFOR\\[-1pt]
+	 \textit{Parser} ASCII\\[-1pt]
+	 Ekspor CSV ($N{=}59$)};
 
-% ---- Tahap 2
-\node[stageBox, right=0.30cm of t1] (t2)
-	{\textbf{\color{UnairBlue}Tahap 2}\\[2pt]
-	 Kalkulus Analitik\\Jacobian $\mathbf{J}$\\
-	 Gradien $\mathbf{g}$\\Hessian $\mathbf{H}$};
+\node[sBox] (t2) at (5.1,0)
+	{\textbf{\color{UnairBlue}Tahap 2}\\[3pt]
+	 Kalkulus Analitik\\[-1pt]
+	 Jacobian $\mathbf{J}$\\[-1pt]
+	 Gradien $\mathbf{g}$\\[-1pt]
+	 Hessian $\mathbf{H}$};
 
-% ---- Tahap 3
-\node[stageBox, right=0.30cm of t2] (t3)
-	{\textbf{\color{UnairBlue}Tahap 3}\\[2pt]
-	 Tebakan Awal\\$E_r^{(0)}{=}\arg\max(\sigma)$\\
-	 $\Gamma^{(0)}$ via FWHM\\$\sigma_{bg}^{(0)}{=}\min(\sigma)$};
+\node[sBox] (t3) at (8.1,0)
+	{\textbf{\color{UnairBlue}Tahap 3}\\[3pt]
+	 Tebakan Awal $\mathbf{p}_0$\\[-1pt]
+	 $E_r^{(0)}{=}\arg\max\sigma$\\[-1pt]
+	 $\Gamma^{(0)}$ via FWHM\\[-1pt]
+	 $\sigma_{bg}^{(0)}{=}\min\sigma$};
 
-% ---- Tahap 4
-\node[stageBox, right=0.30cm of t3] (t4)
-	{\textbf{\color{UnairBlue}Tahap 4}\\[2pt]
-	 Newton-Raphson\\Solver\\
-	 $\mathbf{H}\Delta\mathbf{p}{=}{-}\mathbf{g}$\\
+\node[sBox] (t4) at (11.1,0)
+	{\textbf{\color{UnairBlue}Tahap 4}\\[3pt]
+	 Newton-Raphson\\[-1pt]
+	 $\mathbf{H}\,\Delta\mathbf{p}{=}{-}\mathbf{g}$\\[-1pt]
+	 Solve via LU\\[-1pt]
 	 $\varepsilon{=}10^{-6}$};
 
-% ---- Tahap 5
-\node[stageBox, right=0.30cm of t4] (t5)
-	{\textbf{\color{UnairBlue}Tahap 5}\\[2pt]
-	 Statistik \&\\Kovariansi\\
-	 $\chi^2_{red}$,\; $\mathbf{C}{=}2\mathbf{H}^{-1}$\\Korelasi $\boldsymbol{\rho}$};
+% label baris 1
+\node[rowLabel] at (-0.2, 1.35) {$\longrightarrow$};
 
-% ---- Tahap 6
-\node[stageBox, right=0.30cm of t5] (t6)
-	{\textbf{\color{UnairBlue}Tahap 6}\\[2pt]
-	 Noise Stress Test\\Monte Carlo\\
-	 $\eta{=}5\%,\,15\%,\,30\%$\\Laju Sukses};
+%% ═══════════ BARIS 2: kanan → kiri ═══════════
+\node[sBox] (t5) at (11.1,-3.1)
+	{\textbf{\color{UnairBlue}Tahap 5}\\[3pt]
+	 Statistik \&\\[-1pt]Kovariansi\\[-1pt]
+	 $\chi^2_{red}$,\; $\mathbf{C}{=}2\mathbf{H}^{-1}$\\[-1pt]
+	 Korelasi $\boldsymbol{\rho}$};
 
-% ---- Tahap 7
-\node[stageBox, right=0.30cm of t6] (t7)
-	{\textbf{\color{UnairBlue}Tahap 7}\\[2pt]
-	 Visualisasi\\Kurva Fitting\\Konvergensi\\Peta Derau};
+\node[sBox] (t6) at (8.1,-3.1)
+	{\textbf{\color{UnairBlue}Tahap 6}\\[3pt]
+	 Noise Stress Test\\[-1pt]
+	 Monte Carlo\\[-1pt]
+	 $\eta{=}5\%,15\%,30\%$\\[-1pt]
+	 Laju Sukses};
 
-% ---- END node
-\node[startEnd, right=0.30cm of t7] (stop)
-	{SELESAI\\[1pt]Laporan \&\\Validasi};
+\node[sBox] (t7) at (5.1,-3.1)
+	{\textbf{\color{UnairBlue}Tahap 7}\\[3pt]
+	 Visualisasi\\[-1pt]
+	 Kurva Fitting\\[-1pt]
+	 Plot Konvergensi\\[-1pt]
+	 Peta Derau};
 
-% ---- Arrows
-\draw[stepArrow] (start) -- (t1);
-\draw[stepArrow] (t1)    -- (t2);
-\draw[stepArrow] (t2)    -- (t3);
-\draw[stepArrow] (t3)    -- (t4);
-\draw[stepArrow] (t4)    -- (t5);
-\draw[stepArrow] (t5)    -- (t6);
-\draw[stepArrow] (t6)    -- (t7);
-\draw[stepArrow] (t7)    -- (stop);
+\node[sNode] (stop) at (2.1,-3.1)
+	{SELESAI\\[2pt]Laporan \&\\Validasi};
 
-% ---- Background band
+% label baris 2
+\node[rowLabel] at (12.7, -1.85) {$\downarrow$};
+
+%% ═══════════ PANAH BARIS 1 ═══════════
+\draw[sArrow] (start) -- (t1);
+\draw[sArrow] (t1)    -- (t2);
+\draw[sArrow] (t2)    -- (t3);
+\draw[sArrow] (t3)    -- (t4);
+
+%% ═══════════ TIKUNGAN ULAR ═══════════
+\draw[sBend]  (t4.south) -- ++(0,-0.55) -- ++(0.85,0)
+              -- ++(0,-0.98) -- ++(-0.85,0) -- (t5.north);
+
+%% ═══════════ PANAH BARIS 2 ═══════════
+\draw[sArrow] (t5)   -- (t6);
+\draw[sArrow] (t6)   -- (t7);
+\draw[sArrow] (t7)   -- (stop);
+
+%% ═══════════ BACKGROUND ═══════════
 \begin{scope}[on background layer]
-	\node[fill=UnairBlue!4, rounded corners=5pt,
-		  fit=(start)(stop), inner sep=4pt] {};
+	\fill[UnairBlue!5, rounded corners=6pt]
+		(-1.0, 1.15) rectangle (13.5, -4.25);
+	% strip label baris
+	\fill[UnairBlue!20, rounded corners=2pt]
+		(-0.9, 1.05) rectangle (13.4, 0.9);
+	\fill[UnairBlue!20, rounded corners=2pt]
+		(-0.9, -2.5) rectangle (13.4, -2.65);
 \end{scope}
+
+% label strip
+\node[font=\fontsize{5pt}{5pt}\selectfont\bfseries\color{UnairBlue}]
+	at (6.25, 0.975) {BARIS 1 \ $\longrightarrow$ \ Tahap 1 -- 4};
+\node[font=\fontsize{5pt}{5pt}\selectfont\bfseries\color{UnairBlue}]
+	at (6.25, -2.575) {BARIS 2 \ $\longleftarrow$ \ Tahap 5 -- 7};
 
 \end{tikzpicture}
 \end{center}
