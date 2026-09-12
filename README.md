@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-orange.svg)](resonance_breit_wigner_fitting.ipynb)
 [![Dataset](https://img.shields.io/badge/Data-IAEA--NDS%20EXFOR-red.svg)](exfor_c12_resonance.csv)
+[![PRDs](https://img.shields.io/badge/PRD-Full%20Specs-blueviolet.svg)](PRD/)
 
 Repository ini berisi implementasi komputasi numerik, analisis statistik, visualisasi, dan laporan praktikum untuk **Studi Kasus 8: Fitting Resonansi Hamburan Neutron $^{12}\text{C}(n,\text{tot})$ Model Breit-Wigner Menggunakan Newton-Raphson Multivariat**.
 
@@ -20,6 +21,7 @@ Repository ini berisi implementasi komputasi numerik, analisis statistik, visual
 ## 📌 Tautan Cepat Berkas Utama
 - 📓 **Jupyter Notebook Interaktif**: [`resonance_breit_wigner_fitting.ipynb`](resonance_breit_wigner_fitting.ipynb)
 - 📊 **Datasheet CSV Data Eksperimen**: [`exfor_c12_resonance.csv`](exfor_c12_resonance.csv)
+- 📑 **Dokumen Kebutuhan Produk (PRD)**: Folder [`PRD/`](PRD/)
 - 📄 **Dokumen Laporan Lengkap (PDF)**: [`Laporan/main.pdf`](Laporan/main.pdf)
 - 📜 **Source Code LaTeX Laporan**: Folder [`Laporan/`](Laporan/)
 
@@ -83,8 +85,37 @@ atau buka langsung menggunakan VS Code / JupyterLab.
 
 ---
 
+## 📑 Dokumen Spesifikasi Kebutuhan Produk (PRD)
+
+Seluruh rancangan matematis, penurunan kalkulus, heuristik fisis, logika percabangan, algoritma matriks, dan skenario pengujian termaktub lengkap dalam direktori [`PRD/`](PRD/):
+
+| No. | Dokumen PRD | Komponen Pipeline | Ruang Lingkup & Fokus Utama |
+| :---: | :--- | :--- | :--- |
+| **0** | [PRD Arsitektur Notebook](PRD/PRD_Arsitektur_Jupyter_Notebook.md) | Blueprint Notebook | Standar struktur sel, instalasi dependensi, narasi fisis markdown, dan eksekusi interaktif. |
+| **1** | [PRD Tahap 0](PRD/PRD_Tahap0_Pseudocode_Flowchart_TikZ.md) | Desain Algoritma | Diagram alir TikZ, struktur kontrol perulangan, dan pseudocode algoritma utama. |
+| **2** | [PRD Tahap 1](PRD/PRD_Tahap1_Akuisisi_Data_Pipeline_CSV.md) | Pipeline Data | Akuisisi IAEA-NDS EXFOR, parser regex ASCII, pemotongan rentang energi $1.8-2.4\text{ MeV}$, dan ekspor CSV. |
+| **3** | [PRD Tahap 2](PRD/PRD_Tahap2_Gradien_Hessian.md) | Kalkulus Analitik | Formulasi analitik Jacobian $\mathbf{J}$, Gradien $\mathbf{g}$, dan Hessian Gauss-Newton $\mathbf{H}$. |
+| **4** | [PRD Tahap 3](PRD/PRD_Tahap3_Initial_Guess.md) | Heuristik Tebakan Awal | Ekstraksi otomatis tebakan parameter fisis $\mathbf{p}_0 = [E_r^{(0)}, \Gamma^{(0)}, \sigma_0^{(0)}, \sigma_{bg}^{(0)}]^T$. |
+| **5** | [PRD Tahap 4](PRD/PRD_Tahap4_Newton_Raphson_Solver.md) | Solver Numerik | Mesin solver $\mathbf{H}\Delta\mathbf{p} = -\mathbf{g}$, kriteria henti $\varepsilon = 10^{-6}$, dan bilangan kondisi $\kappa(\mathbf{H})$. |
+| **6** | [PRD Tahap 5](PRD/PRD_Tahap5_Statistik_Kovariansi.md) | Inferensi Statistik | Kelayakan $\chi^2_{red}$, matriks kovariansi $\mathbf{C} = 2\mathbf{H}^{-1}$, matriks korelasi $\boldsymbol{\rho}$, dan residu terbobot. |
+| **7** | [PRD Tahap 6](PRD/PRD_Tahap6_Noise_Stress_Test.md) | Uji Ketahanan Derau | Simulasi Monte Carlo derau Gaussian ($5\%, 15\%, 30\%$) dan identifikasi titik singularitas. |
+| **8** | [PRD Tahap 7](PRD/PRD_Tahap7_Visualisasi.md) | Visualisasi Publikasi | Pembuatan grafik ganda resolusi tinggi untuk naskah publikasi ilmiah. |
+
+---
+
 ## 📚 Struktur Berkas Repository
 ```text
+├── PRD/                                  # Folder Dokumen Spesifikasi Kebutuhan Produk (PRD)
+│   ├── README.md                         # Indeks & diagram alir keterhubungan PRD
+│   ├── PRD_Arsitektur_Jupyter_Notebook.md
+│   ├── PRD_Tahap0_Pseudocode_Flowchart_TikZ.md
+│   ├── PRD_Tahap1_Akuisisi_Data_Pipeline_CSV.md
+│   ├── PRD_Tahap2_Gradien_Hessian.md
+│   ├── PRD_Tahap3_Initial_Guess.md
+│   ├── PRD_Tahap4_Newton_Raphson_Solver.md
+│   ├── PRD_Tahap5_Statistik_Kovariansi.md
+│   ├── PRD_Tahap6_Noise_Stress_Test.md
+│   └── PRD_Tahap7_Visualisasi.md
 ├── resonance_breit_wigner_fitting.ipynb  # Notebook Jupyter mandiri & interaktif
 ├── exfor_c12_resonance.csv               # Datasheet data eksperimen IAEA EXFOR
 ├── build_and_run_notebook.py             # Script otomatis perakit & pengeksekusi notebook
@@ -101,7 +132,7 @@ atau buka langsung menggunakan VS Code / JupyterLab.
 ├── noise_stress_test_plot.png            # Plot uji ketahanan derau Monte Carlo
 ├── Laporan/                              # Folder naskah laporan praktikum LaTeX
 │   ├── main.tex                          # Naskah utama LaTeX
-│   ├── main.pdf                          # Hasil kompilasi laporan PDF (22 halaman)
+│   ├── main.pdf                          # Hasil kompilasi laporan PDF (23 halaman)
 │   ├── references.bib                    # Bibliografi jurnal internasional Q1
 │   ├── figures/                          # Gambar aset laporan
 │   └── sections/                         # Berkas per seksi dokumen
