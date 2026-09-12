@@ -1,0 +1,110 @@
+\documentclass[12pt]{article}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{graphicx}
+\graphicspath{{figures/}} % Direktori penyimpanan gambar
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{titlesec} 
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{verbatim}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage[style=apa]{biblatex}
+\addbibresource{references.bib}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{newtxtext,newtxmath}
+\usepackage[labelsep=period]{caption}
+
+% ================= PENGATURAN BAHASA & LABEL =================
+\renewcommand{\contentsname}{Daftar Isi}
+\renewcommand{\refname}{Daftar Pustaka}
+\renewcommand{\figurename}{Gambar}
+\renewcommand{\tablename}{Tabel}
+\renewcommand{\abstractname}{Abstrak}
+
+% ================= SIUNITX =================
+\sisetup{
+    output-decimal-marker = {,},
+    per-mode = symbol
+}
+\DeclareSIUnit\mmHg{mmHg}
+\DeclareSIUnit\tetes{tetes}
+\DeclareSIUnit\barn{barn}
+
+% ================= LISTINGS (KODE PYTHON) =================
+\definecolor{codebg}{rgb}{0.96,0.96,0.96}
+\definecolor{codekeyword}{rgb}{0.0,0.0,0.65}
+\definecolor{codecomment}{rgb}{0.35,0.55,0.35}
+\definecolor{codestring}{rgb}{0.6,0.2,0.2}
+
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{codestring},
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{gray!50},
+    tabsize=4,
+    captionpos=b
+}
+\lstset{style=pythonstyle}
+
+% ================= FORMAT PENOMORAN SECTION =================
+\renewcommand\thesection{\Alph{section}}
+\renewcommand\thesubsection{\thesection.\arabic{subsection}}
+\titleformat{\section}
+  {\normalfont\bfseries}{\thesection.}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\bfseries}{\thesubsection.}{1em}{}
+
+% ================= DOKUMEN UTAMA =================
+\begin{document}
+
+% Cover dan Abstrak
+\input{sections/00_cover.tex}
+
+% A. Tujuan
+\input{sections/01_tujuan.tex}
+
+% B. Alat dan Bahan
+\input{sections/02_alat_bahan.tex}
+
+% C. Dasar Teori
+\input{sections/03_dasar_teori.tex}
+
+% D. Prosedur
+\input{sections/04_prosedur.tex}
+
+% E. Data Hasil Pengamatan
+\input{sections/05_data_pengamatan.tex}
+
+% F. Analisis Data
+\input{sections/06_analisis_data.tex}
+
+% G. Pembahasan
+\input{sections/07_pembahasan.tex}
+
+% H. Saran dan Kesimpulan
+\input{sections/08_kesimpulan_saran.tex}
+
+% I. Daftar Pustaka
+\input{sections/09_daftar_pustaka.tex}
+
+% J. Lampiran
+\input{sections/10_lampiran.tex}
+
+\end{document}

@@ -1,0 +1,185 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.2cm}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{xcolor}
+
+\SetKwFunction{FFetch}{FetchEXFORRaw}
+\SetKwFunction{FFallback}{FallbackCalibratedDataset}
+\SetKwFunction{FParse}{ParseEXFORAscii}
+\SetKwFunction{FExport}{ExportToCSV}
+\SetKwFunction{FInit}{EstimateInitialGuess}
+\SetKwFunction{FChi}{ComputeChi2}
+\SetKwFunction{FGrad}{ComputeGradient}
+\SetKwFunction{FHess}{ComputeHessian}
+\SetKwFunction{FCond}{ConditionNumber}
+\SetKwFunction{FStats}{ComputeStatisticsAndCovariance}
+\SetKwFunction{FStress}{RunNoiseStressTest}
+\SetKwFunction{FPlotFit}{PlotResonanceFitting}
+\SetKwFunction{FPlotConv}{PlotConvergenceMetrics}
+\SetKwFunction{FPlotStress}{PlotNoiseStressTest}
+\SetKwFunction{FBW}{BreitWigner}
+
+\title{\textbf{Pseudocode Algoritma Komputasi:\\Fitting Resonansi Hamburan Neutron $^{12}\text{C}(n,\text{tot})$ Model Breit-Wigner Menggunakan Metode Newton-Raphson Multivariat}}
+\author{\textbf{Group H} \\ Airin Khairunnisa Nur Raerah (182241045) \quad Hendra Maulana (182241043) \\ \small Departemen Fisika, Fakultas Sains dan Teknologi, Universitas Airlangga}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Algoritma Utama: Pipeline Komputasi}
+
+\begin{algorithm}[H]
+\caption{\textsc{MainPipeline} -- Eksekusi Terintegrasi Tahap 1 hingga Tahap 7}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{Target nuklida $^{12}\text{C}$, reaksi $(n,\text{tot})$, rentang energi $[E_{\min}, E_{\max}] = [1.8, 2.4]\text{ MeV}$, toleransi henti $\varepsilon = 10^{-6}$, batas iterasi $k_{\max} = 50$}
+\Output{Parameter optimal $\mathbf{p}^* = [E_r, \Gamma, \sigma_0, \sigma_{bg}]^T$, ketidakpastian $\delta \mathbf{p}$, reduced chi-square $\chi^2_{red}$, matriks kovariansi $\mathbf{C}$, matriks korelasi $\boldsymbol{\rho}$, plot publikasi}
+
+\BlankLine
+\tcp{\textbf{Tahap 1: Akuisisi Data, Parsing ASCII, \& Pipeline CSV}}
+$\text{raw\_text} \leftarrow \FFetch(\text{''C-12''}, \text{''N,TOT''})$\;
+\If{$\text{raw\_text}$ gagal diunduh atau jaringan timeout}{
+    $\text{raw\_text} \leftarrow \FFallback()$\;
+}
+$(E, \sigma, \Delta\sigma) \leftarrow \FParse(\text{raw\_text})$\;
+$\FExport(E, \sigma, \Delta\sigma, \text{''exfor\_c12\_resonance.csv''})$\;
+
+\BlankLine
+\tcp{\textbf{Tahap 3: Ekstraksi Otomatis Parameter Awal Fisis}}
+$\mathbf{p}_0 \leftarrow \FInit(E, \sigma)$ \tcp*{Heuristik puncak \& FWHM}
+
+\BlankLine
+\tcp{\textbf{Tahap 4: Mesin Solver Newton-Raphson Multivariat}}
+$\mathbf{p} \leftarrow \mathbf{p}_0$; \quad $k \leftarrow 0$; \quad $\text{converged} \leftarrow \text{False}$\;
+$\chi^2_{\text{prev}} \leftarrow \FChi(\mathbf{p}, E, \sigma, \Delta\sigma)$\;
+
+\While{$k < k_{\max}$ \textbf{dan tidak} $\text{converged}$}{
+    \tcp{\textbf{Tahap 2: Formulasi Analitik Gradien \& Matriks Hessian}}
+    $\mathbf{g} \leftarrow \FGrad(\mathbf{p}, E, \sigma, \Delta\sigma)$ \tcp*{Vektor $4 \times 1$}
+    $\mathbf{H} \leftarrow \FHess(\mathbf{p}, E, \sigma, \Delta\sigma)$ \tcp*{Matriks $4 \times 4$ Gauss-Newton}
+    
+    $\kappa \leftarrow \FCond(\mathbf{H}) = \|\mathbf{H}\|_2 \cdot \|\mathbf{H}^{-1}\|_2$\;
+    \If{$\kappa > 10^{12}$ \textbf{atau} $\det(\mathbf{H}) \le 0$}{
+        \textbf{catat} status \textit{ill-conditioned / divergent};\;
+        \textbf{break}\;
+    }
+    
+    Selesaikan sistem linier simultan: $\mathbf{H} \, \Delta\mathbf{p} = -\mathbf{g}$ via \texttt{np.linalg.solve}\;
+    $\mathbf{p} \leftarrow \mathbf{p} + \Delta\mathbf{p}$\;
+    $\chi^2_{\text{curr}} \leftarrow \FChi(\mathbf{p}, E, \sigma, \Delta\sigma)$\;
+    
+    Simpan riwayat konvergensi: $(k, \mathbf{p}, \chi^2_{\text{curr}}, \|\mathbf{g}\|_2, \kappa, \|\Delta\mathbf{p}\|_2)$\;
+    
+    \If{$\|\Delta\mathbf{p}\|_2 < \varepsilon$ \textbf{atau} $|\chi^2_{\text{curr}} - \chi^2_{\text{prev}}| < \varepsilon$}{
+        $\text{converged} \leftarrow \text{True}$\;
+    }
+    $\chi^2_{\text{prev}} \leftarrow \chi^2_{\text{curr}}$;\quad $k \leftarrow k + 1$\;
+}
+$\mathbf{p}^* \leftarrow \mathbf{p}$;\quad $\mathbf{H}^* \leftarrow \FHess(\mathbf{p}^*, E, \sigma, \Delta\sigma)$\;
+
+\BlankLine
+\tcp{\textbf{Tahap 5: Evaluasi Statistik, Matriks Kovariansi, \& Analisis Galat}}
+$(\chi^2_{red}, \mathbf{C}, \delta\mathbf{p}, \boldsymbol{\rho}) \leftarrow \FStats(\mathbf{p}^*, \mathbf{H}^*, \chi^2_{\text{curr}}, N)$\;
+
+\BlankLine
+\tcp{\textbf{Tahap 6: Uji Ketahanan Numerik (Noise Stress-Test)}}
+$\text{stress\_results} \leftarrow \FStress(E, \sigma, \Delta\sigma, \{0.05, 0.15, 0.30\}, 10)$\;
+
+\BlankLine
+\tcp{\textbf{Tahap 7: Visualisasi Saintifik \& Validasi Fisis}}
+$\FPlotFit(E, \sigma, \Delta\sigma, \mathbf{p}^*, \delta\mathbf{p})$\;
+$\FPlotConv(\text{riwayat})$\;
+$\FPlotStress(\text{stress\_results})$\;
+
+\BlankLine
+\Return{$(\mathbf{p}^*, \delta\mathbf{p}, \chi^2_{red}, \mathbf{C}, \boldsymbol{\rho})$}\;
+\end{algorithm}
+
+\newpage
+\section{Sub-Prosedur Rinci per Tahap}
+
+\subsection{Tahap 2: Model Breit-Wigner \& Turunan Analitik}
+\begin{algorithm}[H]
+\caption{\textsc{BreitWignerModel} \& Formulasi Analitik Gradien-Hessian}
+
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\FBW{$E_i, \mathbf{p}$}}{
+    $E_r, \Gamma, \sigma_0, \sigma_{bg} \leftarrow \mathbf{p}$\;
+    $D_i \leftarrow (E_i - E_r)^2 + (\Gamma / 2)^2$\;
+    \Return{$\sigma_{bg} + \sigma_0 \frac{(\Gamma / 2)^2}{D_i}$}\;
+}
+
+\BlankLine
+\Fn{\FGrad{$\mathbf{p}, E, \sigma, \Delta\sigma$}}{
+    $\mathbf{g} \leftarrow [0, 0, 0, 0]^T$\;
+    \For{$i \leftarrow 1$ \KwTo $N$}{
+        $r_i \leftarrow \sigma_i - \FBW(E_i, \mathbf{p})$;\quad $w_i \leftarrow \frac{1}{(\Delta\sigma_i)^2}$\;
+        $D_i \leftarrow (E_i - E_r)^2 + (\Gamma / 2)^2$\;
+        $\frac{\partial \sigma_i}{\partial E_r} \leftarrow \frac{2 \sigma_0 (\Gamma / 2)^2 (E_i - E_r)}{D_i^2}$\;
+        $\frac{\partial \sigma_i}{\partial \Gamma} \leftarrow \frac{\sigma_0 (\Gamma / 2) (E_i - E_r)^2}{D_i^2}$\;
+        $\frac{\partial \sigma_i}{\partial \sigma_0} \leftarrow \frac{(\Gamma / 2)^2}{D_i}$\;
+        $\frac{\partial \sigma_i}{\partial \sigma_{bg}} \leftarrow 1$\;
+        $\mathbf{J}_i \leftarrow \left[ \frac{\partial \sigma_i}{\partial E_r}, \frac{\partial \sigma_i}{\partial \Gamma}, \frac{\partial \sigma_i}{\partial \sigma_0}, \frac{\partial \sigma_i}{\partial \sigma_{bg}} \right]^T$\;
+        $\mathbf{g} \leftarrow \mathbf{g} - 2 w_i r_i \mathbf{J}_i$\;
+    }
+    \Return{$\mathbf{g}$}\;
+}
+
+\BlankLine
+\Fn{\FHess{$\mathbf{p}, E, \sigma, \Delta\sigma$}}{
+    $\mathbf{H} \leftarrow \mathbf{0}_{4 \times 4}$\;
+    \For{$i \leftarrow 1$ \KwTo $N$}{
+        $w_i \leftarrow \frac{1}{(\Delta\sigma_i)^2}$\;
+        $\mathbf{J}_i \leftarrow \left[ \frac{\partial \sigma_i}{\partial E_r}, \frac{\partial \sigma_i}{\partial \Gamma}, \frac{\partial \sigma_i}{\partial \sigma_0}, 1 \right]^T$\;
+        $\mathbf{H} \leftarrow \mathbf{H} + 2 w_i (\mathbf{J}_i \mathbf{J}_i^T)$ \tcp*{Aproksimasi Gauss-Newton Kurvatur Kuadratik}
+    }
+    \Return{$\mathbf{H}$}\;
+}
+\end{algorithm}
+
+\subsection{Tahap 3: Ekstraksi Tebakan Awal Fisis}
+\begin{algorithm}[H]
+\caption{\textsc{EstimateInitialGuess} -- Heuristik Fisis Bebas Tebakan Acak}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{Vektor energi $E$ dan penampang lintang $\sigma$}
+\Output{Vektor parameter awal $\mathbf{p}_0 = [E_r^{(0)}, \Gamma^{(0)}, \sigma_0^{(0)}, \sigma_{bg}^{(0)}]^T$}
+$j_{\text{peak}} \leftarrow \arg\max_i (\sigma_i)$\;
+$E_r^{(0)} \leftarrow E_{j_{\text{peak}}}$ \tcp*{Lokasi energi puncak resonansi}
+$\sigma_{bg}^{(0)} \leftarrow \min( \sigma_1, \sigma_N )$ \tcp*{Baseline kontinum dari sayap data}
+$\sigma_0^{(0)} \leftarrow \sigma_{j_{\text{peak}}} - \sigma_{bg}^{(0)}$ \tcp*{Tinggi resonansi bersih}
+$\sigma_{\text{half}} \leftarrow \sigma_{bg}^{(0)} + 0.5 \sigma_0^{(0)}$ \tcp*{Ambang batas setengah tinggi}
+$E_{\text{above}} \leftarrow \{ E_i \mid \sigma_i \ge \sigma_{\text{half}} \}$\;
+\eIf{$|E_{\text{above}}| > 1$}{
+    $\Gamma^{(0)} \leftarrow \max(E_{\text{above}}) - \min(E_{\text{above}})$ \tcp*{Estimasi lebar FWHM}
+}{
+    $\Gamma^{(0)} \leftarrow 0.05$\;
+}
+\Return{$[E_r^{(0)}, \Gamma^{(0)}, \sigma_0^{(0)}, \sigma_{bg}^{(0)}]^T$}\;
+\end{algorithm}
+
+\subsection{Tahap 5: Evaluasi Statistik \& Kovariansi}
+\begin{algorithm}[H]
+\caption{\textsc{ComputeStatisticsAndCovariance} -- Matriks Kovariansi \& Propagasi Galat}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{$\mathbf{p}^*$, $\mathbf{H}^*$, $\chi^2_{\min}$, $N$ (jumlah data)}
+\Output{$\chi^2_{red}$, $\mathbf{C}$, $\delta\mathbf{p}$, $\boldsymbol{\rho}$}
+$\nu \leftarrow N - 4$ \tcp*{Derajat kebebasan ($m = 4$ parameter)}
+$\chi^2_{red} \leftarrow \chi^2_{\min} / \nu$\;
+$\mathbf{C} \leftarrow 2 (\mathbf{H}^*)^{-1}$ \tcp*{Inversi matriks kelengkungan Hessian}
+\For{$j \leftarrow 1$ \KwTo $4$}{
+    $\delta p_j \leftarrow \sqrt{C_{jj} \cdot \chi^2_{red}}$ \tcp*{Simpangan baku parameter terbobot}
+}
+\For{$j \leftarrow 1$ \KwTo $4$}{
+    \For{$k \leftarrow 1$ \KwTo $4$}{
+        $\rho_{jk} \leftarrow \frac{C_{jk}}{\sqrt{C_{jj} C_{kk}}}$ \tcp*{Matriks korelasi ternormalisasi}
+    }
+}
+\Return{$(\chi^2_{red}, \mathbf{C}, \delta\mathbf{p}, \boldsymbol{\rho})$}\;
+\end{algorithm}
+
+\end{document}
+

@@ -1,0 +1,150 @@
+\newpage
+\section{Lampiran: Kode Program Python Lengkap}
+
+\noindent Seluruh kode program, modul pipeline komputasi Python, lembar data eksperimen CSV, dan dokumen interaktif \textit{Jupyter Notebook} yang dapat dieksekusi secara mandiri telah diunggah ke repositori GitHub:
+\begin{center}
+    \textbf{Akses Repositori GitHub}: \url{https://github.com/xysilverberg/Neutron-Resonance-Breit-Wigner}
+\end{center}
+\vspace{10pt}
+
+\subsection*{1. Modul Akuisisi Data \& Pipeline CSV (\texttt{tahap1\_data\_pipeline.py})}
+\begin{lstlisting}[caption={Modul pengunduhan data EXFOR dan ekspor CSV terformat.}]
+import urllib.request
+import re
+import csv
+import numpy as np
+
+def fetch_exfor_raw(target="C-12", reaction="N,TOT") -> str:
+    """Mengambil raw ASCII stream dari endpoint web IAEA-NDS dengan fallback dataset kalibrasi."""
+    url = f"https://www-nds.iaea.org/exfor/servlet/E4sSearch5?target={target}&reaction={reaction}&quantity=CS"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            content = resp.read().decode("utf-8", errors="ignore")
+            if "DATA" in content and len(content) > 200:
+                return content
+    except Exception:
+        pass
+    return CALIBRATED_EXFOR_ASCII
+
+def parse_exfor_ascii(raw_text: str) -> np.ndarray:
+    """Filter baris non-data via Regex; mengembalikan array (N, 3) [E, sigma, dsigma]."""
+    data_points = []
+    pattern = re.compile(r"^\s*([+-]?[0-9]*\.?[0-9]+(?:[eE][+-]?[0-9]+)?)\s+([+-]?[0-9]*\.?[0-9]+(?:[eE][+-]?[0-9]+)?)\s+([+-]?[0-9]*\.?[0-9]+(?:[eE][+-]?[0-9]+)?)\s*$")
+    for line in raw_text.splitlines():
+        line_clean = line.strip()
+        if not line_clean or line_clean.startswith("#"):
+            continue
+        match = pattern.match(line_clean)
+        if match:
+            e_val, sig_val, dsig_val = float(match.group(1)), float(match.group(2)), float(match.group(3))
+            if 1.79 <= e_val <= 2.41:
+                data_points.append([e_val, sig_val, dsig_val])
+    arr = np.array(data_points, dtype=np.float64)
+    return arr[np.argsort(arr[:, 0])]
+
+def export_to_csv(data: np.ndarray, output_path: str = "exfor_c12_resonance.csv") -> None:
+    """Menulis header metadata dan 3 kolom numerik ke format CSV standar RFC 4180."""
+    with open(output_path, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["energy_mev", "cross_section_barn", "uncertainty_barn"])
+        for row in data:
+            writer.writerow([f"{row[0]:.6f}", f"{row[1]:.6f}", f"{row[2]:.6f}"])
+\end{lstlisting}
+
+\subsection*{2. Modul Formulasi Analitik Gradien \& Hessian (\texttt{tahap2\_analytic\_derivatives.py})}
+\begin{lstlisting}[caption={Model Breit-Wigner, Jacobian, Gradien, dan Hessian Gauss-Newton analitik.}]
+import numpy as np
+
+def breit_wigner(E: np.ndarray, p: np.ndarray) -> np.ndarray:
+    """Model penampang lintang Breit-Wigner satu tingkat: sigma(E; p)."""
+    Er, Gamma, sigma0, sigma_bg = p
+    half_gamma_sq = (0.5 * Gamma)**2
+    denominator = (E - Er)**2 + half_gamma_sq
+    return sigma_bg + sigma0 * (half_gamma_sq / denominator)
+
+def compute_model_jacobian(p: np.ndarray, E: np.ndarray) -> np.ndarray:
+    """Matriks Jacobian analitik d(sigma)/d(p_j) berukuran (N, 4)."""
+    Er, Gamma, sigma0, sigma_bg = p
+    half_gamma = 0.5 * Gamma
+    half_gamma_sq = half_gamma**2
+    diff_E = E - Er
+    diff_E_sq = diff_E**2
+    denom_sq = (diff_E_sq + half_gamma_sq)**2
+    
+    N = len(E)
+    J = np.zeros((N, 4), dtype=np.float64)
+    J[:, 0] = 2.0 * sigma0 * half_gamma_sq * diff_E / denom_sq
+    J[:, 1] = sigma0 * half_gamma * diff_E_sq / denom_sq
+    J[:, 2] = half_gamma_sq / (diff_E_sq + half_gamma_sq)
+    J[:, 3] = 1.0
+    return J
+
+def compute_gradient(p: np.ndarray, E: np.ndarray, sigma: np.ndarray, dsigma: np.ndarray) -> np.ndarray:
+    """Vektor analitik gradien: g = -2 * J^T * W * (sigma - model)."""
+    model = breit_wigner(E, p)
+    weights = 1.0 / (dsigma**2)
+    J = compute_model_jacobian(p, E)
+    return -2.0 * np.dot(J.T, weights * (sigma - model))
+
+def compute_hessian(p: np.ndarray, E: np.ndarray, sigma: np.ndarray, dsigma: np.ndarray) -> np.ndarray:
+    """Matriks Hessian Gauss-Newton simetris: H = 2 * J^T * W * J."""
+    weights = 1.0 / (dsigma**2)
+    J = compute_model_jacobian(p, E)
+    H = 2.0 * np.dot(J.T * weights, J)
+    return 0.5 * (H + H.T)
+\end{lstlisting}
+
+\subsection*{3. Modul Ekstraksi Tebakan Parameter Awal (\texttt{tahap3\_initial\_guess.py})}
+\begin{lstlisting}[caption={Heuristik fisis ekstraksi parameter awal p0 dari bentuk kurva data.}]
+import numpy as np
+
+def extract_initial_parameters(E: np.ndarray, sigma: np.ndarray) -> np.ndarray:
+    """Ekstraksi otomatis parameter awal fisis: p0 = [Er_0, Gamma_0, sigma0_0, sigma_bg_0]."""
+    idx_peak = np.argmax(sigma)
+    Er_0 = float(E[idx_peak])
+    sigma_bg_0 = float(np.min([sigma[0], sigma[-1]]))
+    sigma0_0 = float(sigma[idx_peak] - sigma_bg_0)
+    
+    half_val = sigma_bg_0 + 0.5 * sigma0_0
+    mask_above = sigma >= half_val
+    energies_above = E[mask_above]
+    Gamma_0 = float(energies_above[-1] - energies_above[0]) if len(energies_above) > 1 else 0.05
+    return np.array([Er_0, Gamma_0, sigma0_0, sigma_bg_0], dtype=np.float64)
+\end{lstlisting}
+
+\subsection*{4. Modul Solver Newton-Raphson Multivariat (\texttt{tahap4\_newton\_raphson\_solver.py})}
+\begin{lstlisting}[caption={Algoritma solver Newton-Raphson matriks dengan pemantauan bilangan kondisi.}]
+import numpy as np
+from tahap2_analytic_derivatives import compute_chi2, compute_gradient, compute_hessian
+
+def solve_newton_raphson(p0, E, sigma, dsigma, tol=1e-6, max_iter=50) -> dict:
+    """Eksekusi iterasi Newton-Raphson multivariat: H * Delta_p = -g."""
+    p = np.array(p0, dtype=np.float64).copy()
+    history = []
+    converged = False
+    chi2_prev = compute_chi2(p, E, sigma, dsigma)
+    
+    for k in range(max_iter):
+        g = compute_gradient(p, E, sigma, dsigma)
+        H = compute_hessian(p, E, sigma, dsigma)
+        cond_H = float(np.linalg.cond(H))
+        
+        if cond_H > 1e14 or np.isnan(cond_H):
+            break
+            
+        delta_p = np.linalg.solve(H, -g)
+        step_norm = float(np.linalg.norm(delta_p))
+        
+        history.append({"iteration": k, "p": p.copy(), "chi2": chi2_prev, "grad_norm": float(np.linalg.norm(g)), "step_norm": step_norm, "cond_H": cond_H})
+        
+        p = p + delta_p
+        chi2_curr = compute_chi2(p, E, sigma, dsigma)
+        
+        if step_norm < tol or abs(chi2_curr - chi2_prev) < tol:
+            converged = True
+            break
+        chi2_prev = chi2_curr
+        
+    return {"p_opt": p, "history": history, "converged": converged, "iterations": len(history), "H_final": compute_hessian(p, E, sigma, dsigma), "chi2_final": compute_chi2(p, E, sigma, dsigma)}
+\end{lstlisting}

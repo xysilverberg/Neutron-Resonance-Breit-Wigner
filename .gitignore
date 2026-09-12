@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.ipynb_checkpoints/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.fls
+*.fdb_latexmk
+Laporan/*.aux
+Laporan/*.bbl
+Laporan/*.bcf
+Laporan/*.blg
+Laporan/*.log
+Laporan/*.out
+Laporan/*.run.xml
+Laporan/*.synctex.gz
+Laporan/*.toc
+
+# OS files
+.DS_Store
+Thumbs.db

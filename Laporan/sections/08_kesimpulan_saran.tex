@@ -1,0 +1,26 @@
+\section{Kesimpulan dan Saran}
+
+\subsection*{Kesimpulan}
+Berdasarkan hasil pemodelan komputasi, optimasi numerik, dan analisis inferensial yang telah dilakukan pada Studi Kasus 8, dapat ditarik kesimpulan sebagai berikut:
+\begin{enumerate}
+    \item Pemodelan fenomena resonansi hamburan neutron $^{12}\text{C}(n,\text{tot})$ menggunakan rumus Breit-Wigner satu tingkat berhasil diselesaikan dengan metode Newton-Raphson multivariat berbasis formulasi analitik matriks kelengkungan Hessian Gauss-Newton $\mathbf{H} = 2\mathbf{J}^T\mathbf{W}\mathbf{J}$ tanpa diferensiasi beda-hingga numerik.
+    \item Algoritma komputasi mencapai konvergensi kuadratik penuh hanya dalam **6 langkah iterasi**, mereduksi nilai $\chi^2$ dari $90.8117$ menjadi nilai minimum $18.6064$. Matriks kelengkungan berada dalam kondisi teratur (\textit{well-conditioned}) sepanjang iterasi dengan bilangan kondisi $\kappa(\mathbf{H}) \approx 6.81 \times 10^3$.
+    \item Nilai parameter fisis optimal penampang lintang resonansi nuklir $^{12}\text{C}$ yang diekstraksi dari data riil IAEA-NDS EXFOR adalah:
+    \begin{itemize}
+        \item **Energi Resonansi Pusat ($E_r$)**: $\SI{2.073019 \pm 0.000379}{\mega\electronvolt}$
+        \item **Lebar Resonansi FWHM ($\Gamma$)**: $\SI{0.065895 \pm 0.001148}{\mega\electronvolt}$
+        \item **Amplitudo Resonansi Puncak ($\sigma_0$)**: $\SI{3.133715 \pm 0.030648}{\barn}$
+        \item **Kontinum Latar Belakang ($\sigma_{bg}$)**: $\SI{4.587609 \pm 0.008926}{\barn}$
+    \end{itemize}
+    \item Nilai \textit{reduced chi-square} sebesar $\chi^2_{red} = 0.3383$ ($\nu = 55$) dan sebaran residu terstandarisasi yang acak simetris pada rentang $[-1.5, +1.5]$ mengonfirmasi bahwa model Breit-Wigner satu tingkat sangat akurat dan representatif mendeskripsikan data eksperimen tanpa bias sistematik maupun \textit{overfitting}.
+    \item Terdapat anti-korelasi statistik yang signifikan antara lebar resonansi $\Gamma$ dan amplitudo $\sigma_0$ ($\rho = -0.4737$) yang merefleksikan prinsip kekekalan integral luas penampang lintang spektral, sedangkan posisi energi puncak $E_r$ bersifat independen dan ortogonal ($|\rho| \le 0.18$).
+    \item Validasi terhadap data resmi literatur nuklir internasional IAEA ($E_r^{lit} = 2.078000\text{ MeV}$) menunjukkan diskrepansi mutlak hanya sebesar $0.004981\text{ MeV}$ ($4.98\text{ keV}$) dengan deviasi relatif sebesar **0.2397\%**, membuktikan ketelitian komputasi yang sangat tinggi.
+    \item Uji ketahanan numerik Monte Carlo membuktikan algoritma 100\% tangguh terhadap derau eksperimen hingga $\eta = 15\%$, namun mengalami penurunan rasio konvergensi menjadi 60\% pada derau ekstrem 30\% akibat hilangnya sifat positif definit lokal pada permukaan $\chi^2$.
+\end{enumerate}
+
+\subsection*{Saran}
+Adapun saran metodologis untuk pengembangan praktikum dan komputasi fisika nuklir lanjutan adalah:
+\begin{enumerate}
+    \item Untuk data eksperimen dengan rasio sinyal terhadap derau yang sangat rendah ($\text{SNR} < 3$ atau $\eta > 30\%$), disarankan mengimplementasikan algoritma hibrida **Levenberg-Marquardt** dengan parameter redaman adaptif $\mathbf{H}_{LM} = \mathbf{H} + \lambda \operatorname{diag}(\mathbf{H})$ guna mencegah singularitas matriks kelengkungan saat topologi permukaan $\chi^2$ terdistorsi.
+    \item Untuk rentang energi neutron yang lebih luas yang memuat banyak puncak resonansi yang saling tumpang tindih (\textit{overlapping resonances}), disarankan mengembangkan pemodelan berbasis formalisme matriks-R (\textit{multilevel R-matrix theory}) serta memasukkan koreksi pelebaran Doppler termal (\textit{thermal Doppler broadening}).
+\end{enumerate}

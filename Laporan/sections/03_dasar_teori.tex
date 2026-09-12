@@ -1,0 +1,115 @@
+\section{Dasar Teori}
+
+\subsection*{Model Resonansi Hamburan Breit-Wigner Satu Tingkat}
+Interaksi antara neutron berenergi rendah hingga menengah dengan inti atom target dapat berlangsung melalui dua mekanisme utama: hamburan potensial (\textit{potential scattering}) dan hamburan resonansi melalui pembentukan inti majemuk (\textit{compound nucleus}). Berdasarkan formulasi mekanika kuantum yang diperkenalkan oleh \textcite{breit1936capture}, penampang lintang hamburan total terisolasi satu tingkat (\textit{single-level Breit-Wigner formula}) dinyatakan sebagai:
+\begin{equation}
+    \sigma(E; \mathbf{p}) = \sigma_{bg} + \sigma_0 \frac{(\Gamma / 2)^2}{(E - E_r)^2 + (\Gamma / 2)^2}
+    \label{eq:breit_wigner}
+\end{equation}
+dengan $\mathbf{p} = [E_r, \Gamma, \sigma_0, \sigma_{bg}]^T$ merepresentasikan vektor parameter fisis penampang lintang.
+
+Keempat parameter fisis tersebut memiliki makna mekanika kuantum dan nuklir yang fundamental:
+\begin{enumerate}
+    \item \textbf{$E_r$ (Energi Resonansi Pusat, satuan: MeV)}: Menunjukkan posisi energi kinetik neutron di laboratorium yang berkorespondensi tepat dengan tingkat energi eksitasi diskret dari inti majemuk $^{13}\text{C}^*$. Pada $E = E_r$, fungsi penampang lintang mencapai nilai puncak.
+    \item \textbf{$\Gamma$ (Lebar Resonansi Penuh / FWHM, satuan: MeV)}: Merupakan lebar spektral resonansi pada setengah ketinggian maksimum (\textit{Full Width at Half Maximum}). Berdasarkan prinsip ketidakpastian Heisenberg ($\Delta E \cdot \Delta t \sim \hbar$), nilai $\Gamma$ berbanding terbalik secara langsung terhadap waktu hidup rata-rata (\textit{mean lifetime} $\tau$) dari keadaan inti majemuk tereksitasi sebelum meluruh kembali:
+    \begin{equation}
+        \tau = \frac{\hbar}{\Gamma}
+        \label{eq:heisenberg_lifetime}
+    \end{equation}
+    \item \textbf{$\sigma_0$ (Penampang Lintang Resonansi Puncak Murni, satuan: barn)}: Amplitudo resonansi maksimum murni di atas kontinum latar belakang pada energi resonansi $E_r$, yang ditentukan oleh spin inti sasaran, spin kanal masuk, dan panjang gelombang de Broglie neutron tereduksi.
+    \item \textbf{$\sigma_{bg}$ (Penampang Lintang Kontinum Latar Belakang, satuan: barn)}: Menggambarkan kontribusi hamburan potensial elastis bola keras (\textit{hard-sphere potential scattering}) antara neutron dengan permukaan inti sasaran yang bernilai hampir konstan di sekitar rentang energi lokal resonansi.
+\end{enumerate}
+
+\subsection*{Fungsi Objektif Kuadrat Terkecil Terbobot (\texorpdfstring{$\chi^2$}{Chi-Square})}
+Untuk mencocokkan model kurva teoritis $\sigma(E_i; \mathbf{p})$ terhadap sekumpulan data eksperimen $\{E_i, \sigma_i, \Delta\sigma_i\}_{i=1}^N$, didefinisikan fungsi bobot kuadrat terkecil (\textit{weighted chi-square}):
+\begin{equation}
+    \chi^2(\mathbf{p}) = \sum_{i=1}^N \left( \frac{\sigma_i - \sigma(E_i; \mathbf{p})}{\Delta\sigma_i} \right)^2 = \sum_{i=1}^N w_i \left[ \sigma_i - \sigma(E_i; \mathbf{p}) \right]^2
+    \label{eq:chi2}
+\end{equation}
+dengan $w_i = 1 / (\Delta\sigma_i)^2$ merepresentasikan bobot presisi statistik dari titik eksperimen ke-$i$ \parencite{bevington2003data}.
+
+\subsection*{Metode Newton-Raphson Multivariat dalam Representasi Matriks}
+Penentuan nilai parameter optimal $\mathbf{p}^*$ yang meminimalkan $\chi^2(\mathbf{p})$ diselesaikan melalui pendekatan Newton-Raphson multivariat. Dilakukan ekspansi deret Taylor orde kedua dari fungsi objektif di sekitar titik aproksimasi iterasi ke-$k$ ($\mathbf{p}^{(k)}$):
+\begin{equation}
+    \chi^2(\mathbf{p}^{(k)} + \Delta\mathbf{p}) \approx \chi^2(\mathbf{p}^{(k)}) + \mathbf{g}(\mathbf{p}^{(k)})^T \Delta\mathbf{p} + \frac{1}{2} \Delta\mathbf{p}^T \mathbf{H}(\mathbf{p}^{(k)}) \Delta\mathbf{p}
+    \label{eq:taylor_chi2}
+\end{equation}
+dengan $\mathbf{g} = \nabla_{\mathbf{p}} \chi^2 \in \mathbb{R}^{4 \times 1}$ adalah vektor gradien, dan $\mathbf{H} = \nabla^2_{\mathbf{p}} \chi^2 \in \mathbb{R}^{4 \times 4}$ adalah matriks kelengkungan Hessian.
+
+Kondisi stasioner titik ekstrem mensyaratkan gradien terhadap pergeseran langkah $\Delta\mathbf{p}$ lenyap ($\nabla_{\Delta\mathbf{p}} \chi^2 = \mathbf{0}$):
+\begin{equation}
+    \mathbf{H}(\mathbf{p}^{(k)}) \Delta\mathbf{p} = -\mathbf{g}(\mathbf{p}^{(k)})
+    \label{eq:newton_system}
+\end{equation}
+Persamaan~\eqref{eq:newton_system} merupakan sistem persamaan linier simultan berdimensi $4 \times 4$. Parameter diperbarui pada tiap iterasi melalui relasi:
+\begin{equation}
+    \mathbf{p}^{(k+1)} = \mathbf{p}^{(k)} + \Delta\mathbf{p} = \mathbf{p}^{(k)} - [\mathbf{H}(\mathbf{p}^{(k)})]^{-1} \mathbf{g}(\mathbf{p}^{(k)})
+    \label{eq:newton_update}
+\end{equation}
+
+\subsection*{Penurunan Analitik Vektor Gradien dan Matriks Hessian Gauss-Newton}
+Menghindari ketidakstabilan akibat metode beda-hingga (\textit{finite difference}), seluruh turunan parsial diturunkan secara analitik eksak. Definisikan penyebut Lorentzian kuadrat:
+\begin{equation}
+    D_i = (E_i - E_r)^2 + (\Gamma / 2)^2
+    \label{eq:denom_lorentz}
+\end{equation}
+Elemen-elemen matriks Jacobian model $J_{ij} = \frac{\partial \sigma(E_i; \mathbf{p})}{\partial p_j}$ berukuran $N \times 4$ diturunkan sebagai berikut:
+\begin{align}
+    \frac{\partial \sigma(E_i)}{\partial E_r} &= 2 \sigma_0 \left(\frac{\Gamma}{2}\right)^2 \frac{E_i - E_r}{D_i^2} \label{eq:d_Er} \\
+    \frac{\partial \sigma(E_i)}{\partial \Gamma} &= \sigma_0 \left(\frac{\Gamma}{2}\right) \frac{(E_i - E_r)^2}{D_i^2} \label{eq:d_Gamma} \\
+    \frac{\partial \sigma(E_i)}{\partial \sigma_0} &= \frac{(\Gamma / 2)^2}{D_i} \label{eq:d_sigma0} \\
+    \frac{\partial \sigma(E_i)}{\partial \sigma_{bg}} &= 1 \label{eq:d_sigmabg}
+\end{align}
+
+Dengan mendefinisikan matriks bobot diagonal $\mathbf{W} = \operatorname{diag}(w_1, w_2, \dots, w_N)$ dan vektor residu tak-terbobot $\mathbf{r} = \boldsymbol{\sigma} - \boldsymbol{\sigma}_{model}$, vektor gradien analitik dirumuskan sebagai:
+\begin{equation}
+    \mathbf{g}(\mathbf{p}) = -2 \mathbf{J}^T \mathbf{W} \mathbf{r} = -2 \sum_{i=1}^N \frac{\sigma_i - \sigma(E_i; \mathbf{p})}{(\Delta\sigma_i)^2} \nabla_{\mathbf{p}} \sigma(E_i)
+    \label{eq:gradient_matrix}
+\end{equation}
+
+Matriks kelengkungan Hessian analitik dirumuskan melalui aproksimasi Gauss-Newton \parencite{press2007numerical}:
+\begin{equation}
+    \mathbf{H}(\mathbf{p}) \approx 2 \mathbf{J}^T \mathbf{W} \mathbf{J} \implies H_{jk} = 2 \sum_{i=1}^N \frac{1}{(\Delta\sigma_i)^2} \left( \frac{\partial \sigma(E_i)}{\partial p_j} \frac{\partial \sigma(E_i)}{\partial p_k} \right)
+    \label{eq:hessian_gauss_newton}
+\end{equation}
+Formulasi ini menjamin secara analitik bahwa matriks $\mathbf{H}$ selalu simetris ($H_{jk} = H_{kj}$) dan semi-positif definit ($\lambda_j \ge 0$), sehingga menjamin arah langkah $\Delta\mathbf{p}$ selalu menuju ke arah penurunan $\chi^2$.
+
+\subsection*{Kestabilan Numerik dan Bilangan Kondisi Matriks (\texorpdfstring{$\kappa(\mathbf{H})$}{kappa(H)})}
+Kestabilan penyelesaian sistem linier $\mathbf{H}\Delta\mathbf{p} = -\mathbf{g}$ sangat bergantung pada bilangan kondisi (\textit{condition number}) matriks kelengkungan $\mathbf{H}$:
+\begin{equation}
+    \kappa(\mathbf{H}) = \|\mathbf{H}\|_2 \cdot \|\mathbf{H}^{-1}\|_2 = \frac{\lambda_{\max}(\mathbf{H})}{\lambda_{\min}(\mathbf{H})}
+    \label{eq:condition_number}
+\end{equation}
+Jika $\kappa(\mathbf{H}) \ll 10^{12}$, matriks berada dalam kondisi teratur (\textit{well-conditioned}) dan bebas dari pembesaran galat pembulatan mesin (\textit{machine precision round-off}). Sebaliknya, jika $\kappa(\mathbf{H}) \to \infty$ atau $\lambda_{\min} \le 0$, matriks mengalami singularitas (\textit{ill-conditioned}) yang memicu divergensi numerik.
+
+\subsection*{Evaluasi Statistik, Matriks Kovariansi, dan Propagasi Galat}
+Setelah mencapai titik minimum konvergensi $\mathbf{p}^*$, analisis statistik inferensial dievaluasi melalui:
+\begin{enumerate}
+    \item \textbf{Derajat Kebebasan (\textit{Degrees of Freedom})}:
+    \begin{equation}
+        \nu = N - m = N - 4
+        \label{eq:dof}
+    \end{equation}
+    \item \textbf{\textit{Reduced Chi-Square} ($\chi^2_{red}$)}:
+    \begin{equation}
+        \chi^2_{red} = \frac{\chi^2_{\min}}{\nu}
+        \label{eq:chi2_red}
+    \end{equation}
+    Kriteria kelayakan: Jika $\chi^2_{red} \sim 1$, model fisis selaras dengan sebaran ketidakpastian eksperimental.
+    \item \textbf{Matriks Kovariansi Asimptotik Parameter ($\mathbf{C}$)}:
+    \begin{equation}
+        \mathbf{C} = 2 [\mathbf{H}(\mathbf{p}^*)]^{-1}
+        \label{eq:cov_matrix}
+    \end{equation}
+    Standar deviasi statistik parameter dihitung dari akar elemen diagonal kovariansi terbobot:
+    \begin{equation}
+        \delta p_j = \sqrt{C_{jj} \cdot \chi^2_{red}}
+        \label{eq:param_error}
+    \end{equation}
+    \item \textbf{Matriks Korelasi Ternormalisasi ($\boldsymbol{\rho}$)}:
+    \begin{equation}
+        \rho_{jk} = \frac{C_{jk}}{\sqrt{C_{jj} C_{kk}}}
+        \label{eq:corr_matrix}
+    \end{equation}
+    Nilai $\rho_{jk} \in [-1, 1]$ mendeteksi adanya ketergantungan silang atau kompensasi fisis antar parameter dalam proses fitting.
+\end{enumerate}

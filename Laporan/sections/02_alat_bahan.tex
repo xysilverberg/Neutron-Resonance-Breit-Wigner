@@ -1,0 +1,26 @@
+\section{Alat, Bahan, dan Studi Kasus}
+
+\subsection*{Perangkat Komputasi dan Lingkungan Pemrograman}
+Pelaksanaan praktikum fisika komputasi ini menggunakan ekosistem perangkat keras dan lunak sebagai berikut:
+\begin{enumerate}
+    \item \textbf{Perangkat Keras (\textit{Hardware})}: Komputer kerja dengan arsitektur x86\_64, prosesor multi-inti, dan memori akses acak (RAM) 16 GB.
+    \item \textbf{Sistem Operasi}: Microsoft Windows 11 Enterprise 64-bit.
+    \item \textbf{Bahasa Pemrograman}: Python versi 3.14.x berbasis interpretasi 64-bit.
+    \item \textbf{Pustaka Numerik NumPy (\texttt{numpy})}: Digunakan untuk alokasi larik kontigu presisi ganda (\texttt{float64}), operasi vektorisasi aljabar linier, dan rutin LAPACK \texttt{DGESV} untuk solusi sistem linier $\mathbf{H}\Delta\mathbf{p} = -\mathbf{g}$.
+    \item \textbf{Pustaka Visualisasi Matplotlib (\texttt{matplotlib.pyplot})}: Digunakan untuk pembangkitan grafik saintifik beresolusi tinggi (300 DPI) dengan tipografi keluarga font serif berstandar publikasi.
+    \item \textbf{Pustaka Pembangkit Dokumen LaTeX (MiKTeX \& TikZ)}: Digunakan untuk perancangan diagram alir (\textit{flowchart}) berbasis vektor dan penyusunan laporan komputasi terstruktur.
+\end{enumerate}
+
+\subsection*{Akses Repositori Kode Program dan Lembar Data}
+Seluruh berkas lembar data CSV (\texttt{exfor\_c12\_resonance.csv}), modul komputasi Python, serta dokumen interaktif \textit{Jupyter Notebook} (\texttt{resonance\_breit\_wigner\_fitting.ipynb}) dapat diakses dan diunduh secara publik melalui repositori GitHub resmi berikut:
+\begin{center}
+    \url{https://github.com/xysilverberg/Neutron-Resonance-Breit-Wigner}
+\end{center}
+
+\subsection*{Narasi Studi Kasus Fisis (Kasus 8)}
+Sesuai dengan Panduan Praktikum Fisika Komputasi II \parencite{fiskomunair2026}, Kelompok H ditugaskan untuk menyelesaikan:
+\begin{quote}
+\textit{``Mencocokkan data eksperimen penampang lintang hamburan neutron energi rendah pada inti karbon sebagai fungsi energi neutron menggunakan rumus Breit-Wigner. Sistem persamaan non-linier simultan ini diselesaikan menggunakan pendekatan Newton-Raphson dalam representasi matriks.''}
+\end{quote}
+
+Secara fisis, interaksi neutron dengan energi kinetik $1.8\text{ MeV} \le E \le 2.4\text{ MeV}$ pada sasaran inti $^{12}\text{C}$ memicu eksitasi keadaan resonansi gelombang-D ($J^\pi = 5/2^+$) dari inti majemuk $^{13}\text{C}^*$. Spektrum penampang lintang total memperlihatkan lonjakan tajam pada energi resonansi $E_r \approx 2.078\text{ MeV}$ di atas kontinum hamburan potensial elastis. Karena penampang lintang teoritis bergantung secara non-linier terhadap empat parameter fisis ($E_r, \Gamma, \sigma_0, \sigma_{bg}$), metode regresi linier analitik sederhana tidak dapat diterapkan. Diperlukan algoritma optimasi berbasis kelengkungan kuadratik (Newton-Raphson multivariat) yang stabil, presisi, dan terhindar dari akumulasi galat pembulatan mesin (\textit{round-off error}).
